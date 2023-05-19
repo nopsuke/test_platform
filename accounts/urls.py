@@ -1,20 +1,20 @@
 from django.urls import path
 from . import views
 from django.contrib.auth import views as auth_views
-from .views import RegisterView
+from .views import RegisterView, BalanceView, ReferralsView, LeverageView, register
 
 app_name = 'accounts'
 
 urlpatterns = [
-    #path('register/', views.register, name='register'),
+    # OLD path('register/', views.register, name='register'),
     path("login/", views.login_view, name="login"),
-    path('dashboard/', views.dashboard, name='dashboard'),
+    # OLD path('dashboard/', views.dashboard, name='dashboard'),
     path('logout/', auth_views.LogoutView.as_view(next_page='home'), name='logout'),
-    path('reset_balance/', views.reset_balance, name='reset_balance'),
-    path('change_leverage/', views.change_leverage, name='change_leverage'),
-    path("referrals/", views.referrals, name="referrals"),
-    path('api/register/', views.register, name='register'),
-
+    path('api/balance/', BalanceView.as_view(), name='balance'),
+    # OLD path('change_leverage/', views.change_leverage, name='change_leverage'),
+    path("api/register/", register, name="register"),
+    path("api/Referral/", ReferralsView.as_view(), name="Referral"),
+    path("api/leverage/", LeverageView.as_view(), name="leverage"),
 ]
 
 
