@@ -1,0 +1,19 @@
+{% extends "base.html" %}
+
+{% block title %}Referrals{% endblock %}
+
+{% block content %}
+<p>Your referral code: <strong>{{ user_profile.referral_code }}</strong></p>
+
+<h1>Referred Users</h1>
+
+<ul>
+{% for profile in referred_profiles %}
+    <li>{{ profile.user.username }}</li>
+{% empty %}
+    <li>You have not referred any users yet.</li>
+{% endfor %}
+</ul>
+
+{% endblock %}
+

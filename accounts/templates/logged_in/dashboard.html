@@ -1,0 +1,53 @@
+{% extends "base.html" %}
+
+{% block title %} 
+Dashboard
+{% endblock %}
+
+{% block content %}
+    <h2>Welcome, {{ user.username }}!</h2>
+    <p>Your current balance is: ${{ user.userprofile.balance|floatformat:2 }}</p>
+    <a href="{% url 'accounts:reset_balance' %}">Reset Balance</a>
+
+
+    <a href="{% url 'accounts:change_leverage' %}">Change Leverage</a>
+    
+    <div class="buy-box">
+        <h3>Buy</h3>
+        <form method="post">
+            {% csrf_token %}
+            {{ form.as_p }}
+            <button type="submit">Submit</button>
+        </form>
+        <p>Margin used: ${{ margin_used|floatformat:2 }}</p>
+    </div>
+
+
+    <div class="sell-box">
+        <h3>Sell</h3>
+        <form method="post">
+            {% csrf_token %}
+            {{ form.as_p }}
+            <button type="submit">Submit</button>
+        </form>
+        <p>Margin used: ${{ margin_used|floatformat:2 }}</p>
+    </div>
+    
+    <body>
+        <h1> Testing the websocket </h1>
+    
+        <script type="text/javascript">
+            let url = "ws://localhost:8000/ws/chat/lobby/"
+    
+            const DashSocket = new WebSocket(url)
+            DashSocket.onmessage = function(e) {
+                let data = JSON.parse(e.data)
+                console.log("Data: ", data)
+            }
+        </script>
+        
+    </body>
+
+{% endblock %}
+
+
