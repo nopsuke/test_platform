@@ -14,3 +14,4 @@ class UserProfileSerializer(serializers.ModelSerializer):
         fields = ('id', 'user', 'bio', 'location')
 
 
+# This wouldn't work. Serializer needs more information to work with. 

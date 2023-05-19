@@ -44,4 +44,4 @@ def start_websocket():
 websocket_thread = Thread(target=start_websocket)
 websocket_thread.start()
 
-# This is pretty fucked, need to go at this again or change over to bridge for pricefeed. Would make more sense.
+# This is pretty fucked, need to go at this again or change over to virtual dealer for pricefeed. Would make more sense. That's in JS though..

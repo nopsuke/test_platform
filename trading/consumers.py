@@ -5,7 +5,7 @@ from .market_data import calculate_equity
 from accounts.models import UserProfile
 
 
-
+# Probably useless at this point, but I'll keep it here for now. Need to look into WS related stuff once I get a handle on React.
 
 class EquityConsumer(AsyncJsonWebsocketConsumer):
     async def connect(self):

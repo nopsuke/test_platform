@@ -1,20 +1,15 @@
 from django.urls import path
 from . import views
 from django.contrib.auth import views as auth_views
-from .views import RegisterView
 
-app_name = 'accounts'
+app_name = 'frontend'
 
 urlpatterns = [
-    #path('register/', views.register, name='register'),
+    path('register/', views.register, name='register'),
     path("login/", views.login_view, name="login"),
     path('dashboard/', views.dashboard, name='dashboard'),
     path('logout/', auth_views.LogoutView.as_view(next_page='home'), name='logout'),
     path('reset_balance/', views.reset_balance, name='reset_balance'),
     path('change_leverage/', views.change_leverage, name='change_leverage'),
     path("referrals/", views.referrals, name="referrals"),
-    path('api/register/', views.register, name='register'),
-
 ]
-
-

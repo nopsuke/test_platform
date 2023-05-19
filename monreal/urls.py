@@ -20,9 +20,11 @@ from accounts import views as v
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('accounts/', include('accounts.urls', namespace='accounts')),
+    #path('accounts/', include('accounts.urls', namespace='accounts')),
     path('accounts/', include('django.contrib.auth.urls')),
-    path("", v.home, name="home"),
+    #path("", v.home, name="home"),
     path('api/', include('api.urls')),
-    path('dashboard/', v.dashboard, name='dashboard'),
+    #path('dashboard/', v.dashboard, name='dashboard'),
+    path("", include('frontend.urls', namespace='frontend')),
+
 ]

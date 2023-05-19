@@ -42,6 +42,7 @@ INSTALLED_APPS = [
     "trading",
     "rest_framework",
     "api",
+    "frontend",
     
 ]
 

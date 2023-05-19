@@ -1,0 +1,18 @@
+{% extends 'index.html' %}
+
+{% block content %}
+    <h2>Reset Balance</h2>
+    <form method="post">
+        {% csrf_token %}
+        {% if not subscription_active %}
+            <p>Free-tier users can reset their balance to $5000 and remove trade history.</p>
+            <input type="hidden" name="reset_amount" value="5000">
+            <button type="submit">Reset Balance</button>
+        {% else %}
+            <p>Subscription-tier users can add to their balance without affecting trade history.</p>
+            <label for="reset_amount">Amount to add:</label>
+            <input type="number" name="reset_amount" id="reset_amount" min="0" step="0.01">
+            <button type="submit">Update Balance</button>
+        {% endif %}
+    </form>
+{% endblock %}

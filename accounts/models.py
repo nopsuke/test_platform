@@ -12,10 +12,9 @@ class CustomUser(AbstractUser):
     def __str__(self):
         return self.username
     
-
+# If something goes haywire with this, its because there was a double balance.
 class UserProfile(models.Model):
     user = models.OneToOneField(get_user_model(), on_delete=models.CASCADE)
-    balance = models.DecimalField(max_digits=15, decimal_places=2)
     avatar = models.ImageField(upload_to='avatars/', blank=True, null=True)
     bio = models.TextField(blank=True, null=True)
     balance = models.FloatField(default=5000.00)

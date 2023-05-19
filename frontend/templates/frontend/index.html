@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Your Website{% endblock %}</title>
+    {% block extra_css %}{% endblock %}
+</head>
+<body>
+    <header>
+        <nav>
+            <a href="{% url home %}">Home</a>
+            {% if user.is_authenticated %}
+
+                <a href="{% url accounts:dashboard %}">Dashboard</a>
+                <a href="{% url accounts:referrals %}">Referrals</a>
+                <a href="{% url accounts:logout %}">Logout</a>
+            {% else %}
+                <a href="{% url accounts:register %}">Register</a>
+                <a href="{% url accounts:login %}">Login</a>
+            {% endif %}
+        </nav>
+    </header>
+    <main>
+        {% block content %}{% endblock %}
+    </main>
+    <footer>
+        <p>&copy; Your Website 2023</p>
+    </footer>
+    {% block extra_js %}{% endblock %}
+</body>
+
+
+
+</html>
