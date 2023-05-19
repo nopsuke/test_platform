@@ -9,6 +9,10 @@ from trading.market_data import buy_order
 import string
 import random
 
+
+# Why did I put this here?
+
+
 def register(request):
     if request.method == 'POST':
         form = CustomUserCreationForm(request.POST)

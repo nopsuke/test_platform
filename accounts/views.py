@@ -86,6 +86,7 @@ from rest_framework.permissions import IsAuthenticated
         form = CustomUserCreationForm()
     return render(request, 'accounts/register.html', {'form': form})
 """
+# Why is this different from everything else?
 
 @api_view(['POST'])
 def register(request):
