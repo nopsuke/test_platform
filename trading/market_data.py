@@ -11,12 +11,12 @@ def fetch_time_series_data(symbol, interval='15min', output_size='compact'):
     response = requests.get(url)
     return response.json()
 
-def fetch_current_price(symbol):
+def fetch_current_price(symbol): # This has a WS implementation but I'm pretty sure it's broken. This should probably connect to the dealer and get the price from there.
     return ws.get_current_price(symbol)
 
 
 
-"""POLYGON_API_KEY = "znfXR7OLa31mT1BPHuSl60vIl_syeOoQ"
+"""POLYGON_API_KEY = "XXXXXXXXX"
 
 def fetch_current_price(symbol):
     base_url = "wss://socket.polygon.io/crypto"
@@ -27,7 +27,7 @@ def fetch_current_price(symbol):
 """
 
 
-
+# Should be able to use this to get the current price from the virtual dealer
 def buy_order(user_profile, symbol, quantity, price, leverage, stop_loss=None):
     price = fetch_current_price(symbol)
     amount = price * quantity
@@ -36,16 +36,16 @@ def buy_order(user_profile, symbol, quantity, price, leverage, stop_loss=None):
 
     if not has_enough_balance(user_profile, leveraged_amount):
         return {'error': 'Insufficient balance'}
-    # Simulate trade execution (replace this with actual trade execution via a brokerage or exchange API)
+    # Should tie into the VD
     print(f"Executed buy order for {quantity} shares of {symbol} at ${price:.2f} per share. Total: ${amount:.2f}")
 
-    # Update user's balance
+    # Not sure if redundant?
     user_profile.balance -= leveraged_amount
     update_open_positions(user_profile, symbol, quantity, price, 'buy', stop_loss)
     margin_level = update_margin_level(user_profile)
 
     if margin_level < 100:
-        # Close all positions if the margin level drops below 100%
+        # Close all positions if the margin level drops below 100%, needs a Celery task to check for open positions?
         close_all_positions(user_profile)
         return {'error': 'Margin call. All positions closed.'}
     
@@ -62,16 +62,16 @@ def sell_order(user_profile, symbol, quantity, price, leverage, stop_loss=None):
     amount = price * quantity
     leveraged_amount = amount / user_profile.leverage
 
-    # Simulate trade execution (replace this with actual trade execution via a brokerage or exchange API)
+    # Ties into VD
     print(f"Executed sell order for {quantity} shares of {symbol} at ${price:.2f} per share. Total: ${amount:.2f}")
 
-    # Update user's balance
+    # Update user's balance, needs a celery task?
     user_profile.balance += leveraged_amount
     update_open_positions(user_profile, symbol, quantity, price, 'sell', stop_loss)
     margin_level = update_margin_level(user_profile)
 
     if margin_level < 100:
-        # Close all positions if the margin level drops below 100%
+        # Close all positions if the margin level drops below 100%, not sure if redundant but if not needs a Celery task to check for open positions?
         close_all_positions(user_profile)
         return {'error': 'Margin call. All positions closed.'}
 
@@ -99,7 +99,7 @@ def update_open_positions(user_profile, symbol, quantity, price, action, stop_lo
     user_profile.save()
 
 
-def update_margin_level(user_profile):
+def update_margin_level(user_profile): # Celery task required?
     total_position_value = 0
 
     for symbol, quantity in user_profile.open_positions.items():
@@ -125,7 +125,7 @@ def close_all_positions(user_profile):
     user_profile.open_positions = {}
     user_profile.save()
 
-def calculate_equity(user_profile):
+def calculate_equity(user_profile): # Needs a background task to update the equity every 0.5 seconds, for example.
     total_position_value = 0
 
     for symbol, quantity in user_profile.open_positions.items():

@@ -6,6 +6,7 @@ from django.http import JsonResponse
 from rest_framework.decorators import api_view
 from trading.market_data import fetch_time_series_data, buy_order, sell_order, calculate_equity
 
+# I feel like this is redundant, but maybe it isn't? I don't know. I'll leave it for now.
 
 class UserList(generics.ListCreateAPIView):
     queryset = CustomUser.objects.all()
@@ -23,7 +24,6 @@ class UserProfileDetail(generics.RetrieveUpdateDestroyAPIView):
     queryset = UserProfile.objects.all()
     serializer_class = UserProfileSerializer
 
-# Create your views here.
 
 
 @api_view(['GET'])

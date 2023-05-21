@@ -152,7 +152,7 @@ def home(request):
     return render(request, 'accounts/hello.html', {})
 
 
-def login_view(request):
+"""def login_view(request):
     if request.method == 'POST':
         form = AuthenticationForm(data=request.POST)
         if form.is_valid():
@@ -161,7 +161,19 @@ def login_view(request):
             return redirect('dashboard')
     else:
         form = AuthenticationForm()
-    return render(request, 'accounts/login.html', {'form': form})
+    return render(request, 'accounts/login.html', {'form': form})"""
+
+class LoginView(APIView): # Need to look into rest_framework.authtoken.views.obtain_auth_token and implement here and in a few other places but dont know how to generate tokens etc.
+
+    def post(self, request, *args, **kwargs):
+        form = AuthenticationForm(data=request.data)
+        if form.is_valid():
+            user = form.get_user()
+            login(request, user)
+            return Response({"message": "User logged in successfully"}, status=status.HTTP_200_OK)
+        else:
+            return Response(form.errors, status=status.HTTP_400_BAD_REQUEST)
+        
 
 
 """@login_required
@@ -216,17 +228,17 @@ class BalanceView(APIView):
     def get(self, request, *args, **kwargs):
         user_profile = UserProfile.objects.get(user=request.user)
 
-        # Serialize the data into JSON format
+        
         user_profile_data = UserProfileSerializer(user_profile).data
 
         return Response(user_profile_data)
 
-    def post(self, request, *args, **kwargs):
+    def post(self, request, *args, **kwargs): # This should reset the balance to 5000.
         user_profile = UserProfile.objects.get(user=request.user)
         user_profile.balance = 5000.00
         user_profile.save()
 
-        # Now return the updated profile data
+        # Returns updated profile data.
         user_profile_data = UserProfileSerializer(user_profile).data
         return Response(user_profile_data)
 

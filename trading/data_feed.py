@@ -33,7 +33,7 @@ class MyWebSocketClient(WebSocketClient):
         for m in msgs:
             print(m)
 
-ws = MyWebSocketClient(api_key="znfXR7OLa31mT1BPHuSl60vIl_syeOoQ", market=Market.Crypto, subscriptions=["XA.BTC-USD"])
+ws = MyWebSocketClient(api_key="XXXXXXXXXXXXX", market=Market.Crypto, subscriptions=["XA.BTC-USD"])
 
 def start_websocket():
     try:
@@ -45,3 +45,4 @@ websocket_thread = Thread(target=start_websocket)
 websocket_thread.start()
 
 # This is pretty fucked, need to go at this again or change over to virtual dealer for pricefeed. Would make more sense. That's in JS though..
+# Don't think this works, but maybe can be adapted to work. The dealer plugin does have the data stream sorted though, so maybe can implement that into this project?

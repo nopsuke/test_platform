@@ -35,4 +35,4 @@ class Trade(models.Model):
 
     
 # I'm thinking I need a class for each type of market, and then a class for each type of asset. Should I have a class for each type of trade? I think so. Buy/sell directions
-# Maybe current classes will do, dont know. Need to think about it.
+# Maybe current classes will do, dont know. Need to think about it. Although the trade class could well be enough. Need to test.
