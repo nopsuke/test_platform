@@ -88,8 +88,8 @@ from rest_framework.permissions import IsAuthenticated
 """
 # Why is this different from everything else?
 
-@api_view(['POST'])
-def register(request):
+@api_view(['POST']) 
+def register(request): # Would this be better as a class-based view to match the others? Also token authentication?
     serializer = UserSerializer(data=request.data)
 
     if serializer.is_valid():
@@ -305,7 +305,7 @@ class RegisterView(generics.CreateAPIView):
     serializer_class = UserSerializer
 
 
-class ReferralsView(APIView):
+class ReferralsView(APIView): # IsAuthenticated is fine here. IsAuthenticated just checks if user is logged in.
     permission_classes = [IsAuthenticated]
 
     def get(self, request, *args, **kwargs):

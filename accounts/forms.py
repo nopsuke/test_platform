@@ -2,6 +2,8 @@ from django import forms
 from django.contrib.auth.forms import UserCreationForm
 from .models import CustomUser
 
+# Need to repurpose this altogether. Validation should be coming from Django and React should handle UI, but I'm not sure this is validating anything at all.
+
 class CustomUserCreationForm(UserCreationForm):
     class Meta(UserCreationForm.Meta):
         model = CustomUser
