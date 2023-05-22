@@ -1,11 +1,7 @@
-import React, { Component } from "react";
+import React from "react";
 
-export default class ReferralsPage extends Component {
-    constructor(props) {
-        super(props);
-    }
+const ReferralsPage = () => {
+  return <div>ReferralsPage</div>;
+};
 
-    render() {
-        return <p>Referrals</p>;
-    }
-}
+export default ReferralsPage;
