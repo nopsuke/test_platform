@@ -1,12 +1,24 @@
+<!--- This whole thing is a mess, I tried copying what I already had and added some stuff from a guide I am following but I'm 99% sure the structure is completely off --->
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{% block title %}Your Website{% endblock %}</title>
-    {% block extra_css %}{% endblock %}
+    <title>{% block title %}Evert Testing{% endblock %}</title>
+    {% load static %} <!-- What static am I loading here? From src/components I assume.. -->
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <!-- {% block extra_css %}{% endblock %} Not sure what this is for exactly but I'm guessing styling related space? -->
+    <link
+        rel="stylesheet"
+        href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,700&display=swap"
+    /> <!-- Not sure if this will work, just a random link for trying stuff. I'm guessing the {% block extra_css..} is for this stuff?-->
+    <link rel="stylesheet" type="text/css" href="{% static "css/index.css" %}"
+    /> <!-- Not sure this will work either, seems like I'm missing a library or files? I'm guessing this is the reason I'm unable to render anything? -->
 </head>
-<body>
+{% comment %}
+<!-- Just commenting this out. Needs the curly brackets from above because Django doesn't ignore comments in templates.
+    <body>
     <header>
         <nav>
             <a href="{% url home %}">Home</a>
@@ -29,7 +41,15 @@
     </footer>
     {% block extra_js %}{% endblock %}
 </body>
+-->
+{% endcomment %}
 
+<body>
+    <div id="main">
+        <div id="app"></div> <!-- This is where the App.js from src/components should be rendered.. They aren't being rendered. -->
+    </div>
 
+    <script src="{% static "frontend/main.js" %}"></script> <!-- Probably wont work, it red which is rarely good or functional. -- Yeah doesn't work... -->
+</body>
 
 </html>

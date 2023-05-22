@@ -1,9 +1,9 @@
-// Dashboard.js
+// Dashboard that I used earlier in "accounts", need to figure out what to do with it. Not sure why its expecting TS?
 
-import React, { useEffect, useState } from 'react';
-import axios from 'axios';
+//import React, { useEffect, useState } from 'react';
+//import axios from 'axios';
 
-function Dashboard() {
+/*function Dashboard() {
     const [userProfile, setUserProfile] = useState(null);
     const [tradeSize, setTradeSize] = useState('');
     const [price, setPrice] = useState('');
@@ -26,4 +26,17 @@ function Dashboard() {
     return (
         // I dont understand this very well. Need to look into it.
     );
+} */
+
+import React, { Component } from "react";
+
+export default class Dashboard extends Component {
+    constructor(props) {
+        super(props);
+    }
+
+    render() {
+        return <p>This is a dashboard, where some activity should take place - balances, equity etc.</p>;
+    }
 }
+

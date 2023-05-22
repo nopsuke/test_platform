@@ -10,7 +10,10 @@ import string
 import random
 
 
-# Why did I put this here?
+def index(request, *args, **kwargs):
+    return render(request, 'frontend/index.html')
+
+# Why did I put this here? This whole thing is redundant and pointless I suspect. Created a new index view for the homepage.
 
 
 def register(request):

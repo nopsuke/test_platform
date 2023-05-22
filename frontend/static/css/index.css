@@ -1,0 +1,25 @@
+/* This file contains the style base. */
+html, body {
+    height: 100%;
+    margin: 0;
+    font-family: Arial, Helvetica, sans-serif;
+    padding: 0;
+}
+
+#main {
+    position: fixed;
+    width: 100%;
+    height: 100%;
+    left: 0;
+    top: 0;
+
+}
+/* Main div wraps the app div. 
+App div is where the code will actually be rendered. */
+
+#app {
+    width: 100%;
+    height: 100%;
+    display: flex;
+
+}
