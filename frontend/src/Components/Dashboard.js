@@ -3,7 +3,7 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
 
-function Dashboard() {
+const Dashboard = () => {
   const [userProfile, setUserProfile] = useState(null);
   const [tradeSize, setTradeSize] = useState("");
   const [price, setPrice] = useState("");
@@ -35,4 +35,6 @@ function Dashboard() {
     // D - this is the "HTML" that gets added to the page. We get the information we need from the APIs above and then use it here
     <div>{userProfile.name}</div>
   );
-}
+};
+
+export default Dashboard;

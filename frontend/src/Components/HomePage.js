@@ -1,8 +1,6 @@
 import React, { useState, useEffect } from "react";
-import ReferralsPage from "./Components/ReferralsPage";
-import Dashboard from "./Components/Dashboard";
-
-import React from "react";
+import ReferralsPage from "./ReferralsPage";
+import Dashboard from "./Dashboard";
 
 const HomePage = () => {
   return <div>HomePage</div>;
