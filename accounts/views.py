@@ -129,6 +129,8 @@ def generate_referral_code():
             return code
 
 class BuyOrderView(APIView):
+    permission_classes = [IsAuthenticated] # Should also check if the user is logged in / verified.
+
     def post(self, request, format=None):
         user_profile = UserProfile.objects.get(user=request.user)
         trade_size = request.data['trade_size']
@@ -233,7 +235,7 @@ class BalanceView(APIView):
 
         return Response(user_profile_data)
 
-    def post(self, request, *args, **kwargs): # This should reset the balance to 5000.
+    def post(self, request, *args, **kwargs): # This should reset the balance to 5000. Double check it doesn't add like it did before.
         user_profile = UserProfile.objects.get(user=request.user)
         user_profile.balance = 5000.00
         user_profile.save()
@@ -261,7 +263,7 @@ def change_leverage(request):
     return render(request, 'logged_in/change_leverage.html', {'form': form})"""
 
 class LeverageView(APIView):
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated] # What the hell is it authenticating? The logged in status? Not sure this would work, can add a token generation to login.
     
     def get(self, request, *args, **kwargs):
         user_profile = UserProfile.objects.get(user=request.user)
@@ -305,7 +307,7 @@ class RegisterView(generics.CreateAPIView):
     serializer_class = UserSerializer
 
 
-class ReferralsView(APIView): # IsAuthenticated is fine here. IsAuthenticated just checks if user is logged in.
+class ReferralsView(APIView): # IsAuthenticated is fine here. IsAuthenticated just checks if user is logged in although I'm not sure what it is authenticating currently.
     permission_classes = [IsAuthenticated]
 
     def get(self, request, *args, **kwargs):
