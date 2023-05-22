@@ -2,7 +2,7 @@ from polygon import WebSocketClient
 from polygon.websocket.models import WebSocketMessage, Market
 from typing import List
 from threading import Thread
-
+""""
 class MyWebSocketClient(WebSocketClient):
     def __init__(self, api_key, market, subscriptions):
         super().__init__(api_key, market, subscriptions)
@@ -46,3 +46,7 @@ websocket_thread.start()
 
 # This is pretty fucked, need to go at this again or change over to virtual dealer for pricefeed. Would make more sense. That's in JS though..
 # Don't think this works, but maybe can be adapted to work. The dealer plugin does have the data stream sorted though, so maybe can implement that into this project?
+
+"""
+
+ws = WebSocketClient
