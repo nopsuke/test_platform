@@ -1,20 +1,9 @@
-import React, { Component } from "react";
-import ReferralsPage from "./Components/ReferralsPage";
-import Dashboard from "./Components/Dashboard";
-import { 
-    BrowserRouter as Router, 
-    Switch, 
-    Route, 
-    Link, 
-    Navigate, 
-} from "react-router-dom"; // Redirect was replaced by Navigate.
+import React, { useState, useEffect } from "react";
+import ReferralsPage from "./ReferralsPage";
+import Dashboard from "./Dashboard";
 
-export default class HomePage extends Component {
-    constructor(props) {
-        super(props);
-    }
+const HomePage = () => {
+  return <div>HomePage</div>;
+};
 
-    render() {
-        return <p>This is hopefully the homepage</p>; // I should use the router here, but I'm not getting this paragraph as intended yet.
-    }
-}
+export default HomePage;
