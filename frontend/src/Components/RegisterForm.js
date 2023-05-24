@@ -1,11 +1,13 @@
 import React, { useState } from 'react';
-import axios from 'axios';
 import { on } from 'ws';
 // Moved from /frontend/ 
 // Attempting to create a registration form for users to register for an account and change "function" to "class" to see if that helps.
 
 
-// I need to add validation to the form and error handling, not sure how to do that yet.
+// I need to add validation to the form and error handling, not sure how to do that yet. Also password needs to be hashed and salted but this should be done on the backend.
+// The form should also POST to the backend and create a new user in the database. I'll try and figure that out.
+// Under accounts/views.py there is a register view that should be able to handle the POST request from the form.
+
 const RegisterForm = ({ onAdd }) => {
     const [username, setUsername] = useState("")
     const [password, setPassword] = useState("")
@@ -31,7 +33,7 @@ const RegisterForm = ({ onAdd }) => {
         setPassword("")
         setEmail("")
     }
-
+// Need to hide the password, material.ui? 
     return(
         <form className='add-form' onSubmit={onSubmit}>
             <div className='form-control'>
