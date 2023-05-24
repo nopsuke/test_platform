@@ -33,7 +33,9 @@ const RegisterForm = ({ onAdd }) => {
         setPassword("")
         setEmail("")
     }
-// Need to hide the password, material.ui? 
+// E - Need to hide the password, MUI maybe for style?
+// E - I don't know how to do the POST request to the backend and handle the response. I think I need to use axios but I'm not sure.
+
     return(
         <form className='add-form' onSubmit={onSubmit}>
             <div className='form-control'>

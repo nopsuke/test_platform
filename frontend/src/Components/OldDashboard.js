@@ -1,5 +1,6 @@
 // Dashboard that I used earlier in "accounts", need to figure out what to do with it. Not sure why its expecting TS?
 // Pointless but I will keep for reference.
+// I'm not sure if axios is the right tool for the job here. I think fetch is better?
 
 import React, { useEffect, useState } from "react";
 import axios from "axios";
@@ -21,6 +22,7 @@ const Dashboard = () => {
 
   const handleBuyOrder = () => {
     // D - currently you do not set the tradeSize, price, or stopLoss. I assume these come from an API?
+    // E - This should actually be a part of a POST request to the backend, user should be able to set size, price stop_loss etc. and then submit the order.
     axios
       .post("/api/buy_order/", {
         trade_size: tradeSize,
@@ -34,6 +36,7 @@ const Dashboard = () => {
   return (
     // I dont understand this very well. Need to look into it.
     // D - this is the "HTML" that gets added to the page. We get the information we need from the APIs above and then use it here
+    // E - It should be the other way around then, yes? We should be able to set the trade size, price, stop loss etc. and then submit the order.
     <div>{userProfile.name}</div>
   );
 };
