@@ -8,7 +8,7 @@ from trading.models import Trade
 from trading.market_data import buy_order
 import string
 import random
-
+# Completely unnecessary but will keep as a reference for now
 
 def index(request, *args, **kwargs):
     return render(request, 'frontend/index.html')

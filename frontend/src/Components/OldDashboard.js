@@ -1,4 +1,5 @@
 // Dashboard that I used earlier in "accounts", need to figure out what to do with it. Not sure why its expecting TS?
+// Pointless but I will keep for reference.
 
 import React, { useEffect, useState } from "react";
 import axios from "axios";
