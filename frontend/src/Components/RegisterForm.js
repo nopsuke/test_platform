@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { on } from 'ws';
 // Moved from /frontend/ 
-// Attempting to create a registration form for users to register for an account and change "function" to "class" to see if that helps.
+// Register2 is better.
 
 
 // I need to add validation to the form and error handling, not sure how to do that yet. Also password needs to be hashed and salted but this should be done on the backend.
@@ -49,9 +49,10 @@ const RegisterForm = ({ onAdd }) => {
             value={password}
             onChange={(e) => setPassword(e.target.value)}/>
         </div>
-        <div className="form-control form-control-check">
+        <div className="form-control">
             <label>Email</label>
             <input type="text"
+            placeholder="Enter your email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}/>
         </div>
@@ -70,56 +71,3 @@ export default RegisterForm
 
 
 
-
-
-
-
-
-
-
-
-/*function RegisterForm() {
-    const [formData, setFormData] = useState({
-        username: '',
-        email: '',
-        password: '',
-    });
-
-    const handleChange = (e) => {
-        setFormData({...formData, [e.target.name]: e.target.value});
-    }
-
-    const handleSubmit = (e) => {
-        e.preventDefault();
-        axios.post('/api/register/', formData)
-            .then(response => {
-                console.log(response.data);
-            })
-            .catch(error => {
-                console.log(error);
-            });
-    }
-
-    return (
-        <form onSubmit={handleSubmit}>
-            <label>
-                Username:
-                <input type="text" name="username" onChange={handleChange} />
-            </label>
-            <label>
-                Email:
-                <input type="email" name="email" onChange={handleChange} />
-            </label>
-            <label>
-                Password:
-                <input type="password" name="password" onChange={handleChange} />
-            </label>
-            <input type="submit" value="Register" />
-        </form>
-    );
-}
-
-export default RegisterForm;
-
-
-*/
