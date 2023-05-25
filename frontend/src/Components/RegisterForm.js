@@ -22,7 +22,7 @@ import axios from "axios";
 
 */
 
-const Register2 = () => {
+const RegisterForm = () => {
   const [formData, setFormData] = useState({
     username: "",
     email: "",
@@ -106,4 +106,4 @@ const Register2 = () => {
   );
 };
 
-export default Register2;
+export default RegisterForm;

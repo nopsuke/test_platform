@@ -3,7 +3,6 @@ import HomePage from "./Components/HomePage";
 import { BrowserRouter as Router, Route, Routes } from "react-router-dom"; // The Router lives at the root of the project so that all components that you create can be accessed
 import RegisterForm from "./Components/RegisterForm";
 import Header from "./Components/Header";
-import Register2 from "./Components/Register2";
 
 const App = () => {
   const [user, setUser] = useState() // E - I want to use this to store the user data upon successfully logging in. I'm not sure if this is the correct approach though.
