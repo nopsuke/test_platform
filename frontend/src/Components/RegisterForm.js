@@ -28,7 +28,7 @@ const RegisterForm = () => {
     email: "",
     password: "",
   });
-  const [username, setUsername] = useState(""); 
+  // const [username, setUsername] = useState(""); E - I had to remove this. I couldn't figure out the double binding and I am desperate to try and register a user :D.
 
   const updateFormData = (e) => {
     //destructuring
@@ -39,7 +39,7 @@ const RegisterForm = () => {
   const handleSubmit = (e) => {
     e.preventDefault();
 
-    if (!username) {
+    if (!formData.username) {
         alert("Please add a username");
         return;
     }
@@ -55,14 +55,26 @@ const RegisterForm = () => {
 
     //D - Use error handling. On a very basic level check if username === ""
     // you did that in the other file
+// axios wont work, need to implement a token system otherwise it'll send a 403 error. E - solved with django-cors-headers.
+    const url = "http://localhost:8000/api/api/register/"
 
+    console.log(`Attempting to post: ${url}`);
+    
     axios
-      .post("/api/register/", formData)
+      .post(url, formData)
       .then((response) => {
         console.log(response.data);
       })
-      .catch((error) => {
-        console.log(error);
+      .catch((error) => { // I added a bunch of error logging because I couldn't figure out what was going wrong. Is it good practise to keep this in?
+        if (error.response) {
+          console.log('Error status:', error.response.status);
+          console.log('Error details:', error.response.data);
+        } else if (error.request) {
+            console.log('No response was received', error.request);
+        } else {
+            console.log('Something happened setting up the request', error.message);
+        }
+
       });
   };
 
@@ -74,8 +86,8 @@ const RegisterForm = () => {
           <input
             type="text"
             name="username"
-            value={username} 
-            onChange={(e) => setUsername(e.target.value)} /* E - I did some googling and I'm even more confused. We seem to want username as a controlled component but I don't know why. */
+            value={formData.username} 
+            onChange={updateFormData} /* E - I did some googling and I'm even more confused. We seem to want username as a controlled component but I don't know why. */
           />
         </label>
       </div>
