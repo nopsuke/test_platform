@@ -86,47 +86,50 @@ from rest_framework.permissions import IsAuthenticated
         form = CustomUserCreationForm()
     return render(request, 'accounts/register.html', {'form': form})
 """
-# Why is this different from everything else?
-
-@api_view(['POST']) 
-def register(request): # Would this be better as a class-based view to match the others? Also token authentication?
-    serializer = UserSerializer(data=request.data)
-
-    if serializer.is_valid():
-        user = serializer.save()
-        login(request, user)
-
-        # Generate a referral code for the new user
-        new_user_referral_code = generate_referral_code()
-        # Ensure the referral code is unique
-        while UserProfile.objects.filter(referral_code=new_user_referral_code).exists():
-            new_user_referral_code = generate_referral_code()
-
-        # The UserProfile should already have been created by the signal
-        user_profile = UserProfile.objects.get(user=user)
-        user_profile.referral_code = new_user_referral_code
-
-        # If the new user was referred by someone else, set the referrer
-        referral_code = request.data.get('referral_code', None)
-        if referral_code:
-            try:
-                referrer_profile = UserProfile.objects.get(referral_code=referral_code)
-                user_profile.referrer = referrer_profile.user
-            except UserProfile.DoesNotExist:
-                pass
-
-        user_profile.save()
-
-        return Response({"message": "User registered successfully"}, status=status.HTTP_201_CREATED)
-
-    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
-def generate_referral_code():
-    while True:
-        code = ''.join(random.choices(string.ascii_uppercase + string.digits, k=8))
-        if not UserProfile.objects.filter(referral_code=code).exists():
-            return code
+class RegisterView(APIView):
+    def post(self, request):
+        serializer = UserSerializer(data=request.data)
+
+        if serializer.is_valid():
+            user = serializer.save()
+            login(request, user)
+
+            # Generate a referral code for the new user
+            new_user_referral_code = self.generate_referral_code()
+
+            # Ensure the referral code is unique
+            while UserProfile.objects.filter(referral_code=new_user_referral_code).exists():
+                new_user_referral_code = self.generate_referral_code()
+
+            # The UserProfile should already have been created by the signal
+            user_profile = UserProfile.objects.get(user=user)
+            user_profile.referral_code = new_user_referral_code
+
+            # If the new user was referred by someone else, set the referrer
+            referral_code = request.data.get('referral_code', None)
+            if referral_code:
+                try:
+                    referrer_profile = UserProfile.objects.get(referral_code=referral_code)
+                    user_profile.referrer = referrer_profile.user
+                except UserProfile.DoesNotExist:
+                    pass
+
+            user_profile.save()
+
+            return Response({"message": "User registered successfully"}, status=status.HTTP_201_CREATED)
+
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    @staticmethod
+    def generate_referral_code():
+        while True:
+            code = ''.join(random.choices(string.ascii_uppercase + string.digits, k=8))
+            if not UserProfile.objects.filter(referral_code=code).exists():
+                return code
+            
+
 
 class BuyOrderView(APIView):
     permission_classes = [IsAuthenticated] # Should also check if the user is logged in / verified.

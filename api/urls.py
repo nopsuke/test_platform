@@ -12,5 +12,6 @@ urlpatterns = [
     path('orders/buy/', views.create_buy_order, name='create_buy_order'),
     path('orders/sell/', views.create_sell_order, name='create_sell_order'),
     path('equity/', views.get_equity, name='get_equity'),
+    path("api/register/", accounts_urls.RegisterView.as_view(), name="register"),
 ]
 
