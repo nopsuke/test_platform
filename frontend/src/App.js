@@ -62,7 +62,7 @@ const App = () => {
         
 
         <RegisterForm />
-        <Register2 />
+        
 
       </div>
     </Router>

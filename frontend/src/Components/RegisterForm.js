@@ -1,75 +1,109 @@
 import React, { useState } from "react";
-import { on } from "ws";
-// Moved from /frontend/
-// Register2 is better.
+import axios from "axios";
 
-// I need to add validation to the form and error handling, not sure how to do that yet. Also password needs to be hashed and salted but this should be done on the backend.
-// The form should also POST to the backend and create a new user in the database. I'll try and figure that out.
-// Under accounts/views.py there is a register view that should be able to handle the POST request from the form.
+/*
+    D - This code is definitely working and functional!
 
-const RegisterForm = ({ onAdd }) => {
-  const [username, setUsername] = useState("");
-  const [password, setPassword] = useState("");
-  const [email, setEmail] = useState("");
-  const onSubmit = (e) => {
+    1. You never set the value of the "inputs." For inputs and other stateful changes it's best to double bind the state (set it and read it). I'm changing the "username" input to reflect this. This also removes the need for a handle change callback, since it's all handled in state anyways. If you prefer the full form data obj then you should have a helper function like updateFormData
+    2. I renamed "handleChange" to "updateFormData" for the sake of readability. Good practice to always name things in a more descriptive way
+    3. Just for the sake of teaching you about destructuring, I destructured "e.target" in "updateFormData"
+    4. What's the "form-control" class? That needs a much better name. Wrap the whole form area in a class called "formCont" and you can style easily from there
+
+    Important note - you should be using a library to handle authentication. I'm pretty sure react-router has some of that functionality, but there are other great resources for this.
+    
+
+    E - Awesome man!
+
+    1. Yes, like we discussed I'm still a little confused about the inputs and the state. I'll keep working on it and hopefully make it "click" soon.
+    2. I like the name updateFormData. I'll use that from now on. 
+    3. Funnily enough, I didn't destructure in my practise site because I thought just using generic "e" was easier to read. I'll try to use destructuring more often.
+    4. I'll change the class name to formCont once I get some style ideas. It's just a generic class name I found on a tutorial :D.
+
+
+*/
+
+const Register2 = () => {
+  const [formData, setFormData] = useState({
+    username: "",
+    email: "",
+    password: "",
+  });
+  const [username, setUsername] = useState(""); 
+
+  const updateFormData = (e) => {
+    //destructuring
+    const { name, value } = e.target;
+    setFormData({ ...formData, [name]: value });
+  };
+
+  const handleSubmit = (e) => {
     e.preventDefault();
 
     if (!username) {
-      alert("Please add a username");
-      return;
+        alert("Please add a username");
+        return;
     }
-    if (!password) {
-      alert("Please add a password");
-      return;
+    if (!formData.password) {
+        alert("Please add a password");
+        return;
     }
-    if (!email) {
-      alert("Please add an email");
-      return;
+    if (!formData.email) {
+        alert("Please add an email");
+        return;
     }
-    onAdd({ username, password, email });
 
-    setUsername("");
-    setPassword("");
-    setEmail("");
+
+    //D - Use error handling. On a very basic level check if username === ""
+    // you did that in the other file
+
+    axios
+      .post("/api/register/", formData)
+      .then((response) => {
+        console.log(response.data);
+      })
+      .catch((error) => {
+        console.log(error);
+      });
   };
-  // E - Need to hide the password, MUI maybe for style?
-  // D - set the input type to "password"
-
-  // E - I don't know how to do the POST request to the backend and handle the response. I think I need to use axios but I'm not sure.
 
   return (
-    <form className="add-form" onSubmit={onSubmit}>
+    <form className="container" onSubmit={handleSubmit}>
       <div className="form-control">
-        <label>Username</label>
-        <input
-          type="text"
-          placeholder="Create a Username"
-          value={username}
-          onChange={(e) => setUsername(e.target.value)}
-        />
+        <label>
+          Username:
+          <input
+            type="text"
+            name="username"
+            value={username} 
+            onChange={(e) => setUsername(e.target.value)} /* E - I did some googling and I'm even more confused. We seem to want username as a controlled component but I don't know why. */
+          />
+        </label>
       </div>
       <div className="form-control">
-        <label>Password</label>
-        <input
-          type="password"
-          placeholder="Set a password"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-        />
+        <label>
+          Email:
+          <input
+            type="email"
+            name="email"
+            value={formData.email}
+            onChange={updateFormData} /*E - am I wrong or should this work? */
+          />
+        </label>
       </div>
       <div className="form-control">
-        <label>Email</label>
-        <input
-          type="text"
-          placeholder="Enter your email"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
+        <label>
+          Password:
+          <input
+           type="password" 
+           name="password" 
+           value={formData.password} 
+           onChange={updateFormData} /*E - am I wrong or should this work? */
         />
+        </label>
       </div>
-
-      <input type="submit" value="Create account" className="btn btn-block" />
+      <input type="submit" value="Register" className="btn btn-block" />
     </form>
   );
 };
 
-export default RegisterForm;
+export default Register2;
