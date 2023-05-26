@@ -11,7 +11,7 @@ class UserProfileSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = UserProfile
-        fields = ('id', 'user', 'bio', 'location')
+        fields = ('id', 'user', 'bio', "balance", "leverage", "margin_level", "open_positions", "referral_code", "referrer")
 
 
 # This wouldn't work. Serializer needs more information to work with. 

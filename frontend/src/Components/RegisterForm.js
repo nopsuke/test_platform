@@ -23,6 +23,7 @@ import axios from "axios";
 */
 
 const RegisterForm = () => {
+  const [authenticated, setAuthenticated] = useState(localStorage.getItem("token") ? true : false);
   const [formData, setFormData] = useState({
     username: "",
     email: "",
@@ -63,9 +64,13 @@ const RegisterForm = () => {
     axios
       .post(url, formData)
       .then((response) => {
-        console.log(response.data);
+        console.log(response.data)
+        if (response.status >= 200 && response.status < 300) { 
+          localStorage.setItem("token", response.data.token) 
+          setAuthenticated(true)
+        }
       })
-      .catch((error) => { // I added a bunch of error logging because I couldn't figure out what was going wrong. Is it good practise to keep this in?
+      .catch((error) => { // I added a bunch of error logging because I couldn't figure out what was going wrong. Is it good practise to keep this in? I'll add more error handling later.
         if (error.response) {
           console.log('Error status:', error.response.status);
           console.log('Error details:', error.response.data);
@@ -77,6 +82,7 @@ const RegisterForm = () => {
 
       });
   };
+// I don't think the token is being received. Will need to look into that.
 
   return (
     <form className="container" onSubmit={handleSubmit}>

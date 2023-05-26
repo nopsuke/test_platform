@@ -89,7 +89,7 @@ from rest_framework.authtoken.models import Token
     return render(request, 'accounts/register.html', {'form': form})
 """
 
-
+# User is generated as intended but referral code is not generated. All other data seems to OK as well.
 class RegisterView(APIView):
     def post(self, request):
         serializer = UserSerializer(data=request.data)
