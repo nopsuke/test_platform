@@ -16,6 +16,8 @@ from rest_framework.views import APIView
 from .serializers import UserSerializer, UserProfileSerializer
 from django.contrib.auth import get_user_model
 from rest_framework.permissions import IsAuthenticated
+from rest_framework.authentication import TokenAuthentication
+from rest_framework.authtoken.models import Token
 
 
 """def register(request):
@@ -95,6 +97,7 @@ class RegisterView(APIView):
         if serializer.is_valid():
             user = serializer.save()
             login(request, user)
+            token, created = Token.objects.get_or_create(user=user) # This should add a new token to the database if the user doesn't have one already.
 
             # Generate a referral code for the new user
             new_user_referral_code = self.generate_referral_code()
@@ -118,7 +121,7 @@ class RegisterView(APIView):
 
             user_profile.save()
 
-            return Response({"message": "User registered successfully"}, status=status.HTTP_201_CREATED)
+            return Response({"token": token.key, "message": "User registered successfully"}, status=status.HTTP_201_CREATED)
 
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
@@ -133,6 +136,7 @@ class RegisterView(APIView):
 
 class BuyOrderView(APIView):
     permission_classes = [IsAuthenticated] # Should also check if the user is logged in / verified.
+    authentication_classes = [TokenAuthentication] # Added token authentication.
 
     def post(self, request, format=None):
         user_profile = UserProfile.objects.get(user=request.user)
@@ -169,17 +173,19 @@ def home(request):
     return render(request, 'accounts/login.html', {'form': form})"""
 
 class LoginView(APIView): # Need to look into rest_framework.authtoken.views.obtain_auth_token and implement here and in a few other places but dont know how to generate tokens etc.
+    authentication_classes = [TokenAuthentication]
+
 
     def post(self, request, *args, **kwargs):
         form = AuthenticationForm(data=request.data)
         if form.is_valid():
             user = form.get_user()
             login(request, user)
-            return Response({"message": "User logged in successfully"}, status=status.HTTP_200_OK)
+            token, created = Token.objects.get_or_create(user=user)
+            return Response({"token": token.key, "message": "User logged in successfully"}, status=status.HTTP_200_OK)
         else:
             return Response(form.errors, status=status.HTTP_400_BAD_REQUEST)
         
-
 
 """@login_required
 def dashboard(request):
@@ -206,8 +212,10 @@ def logout_view(request):
 
 class LogoutView(APIView):
     permission_classes = [IsAuthenticated]
+    authentication_classes = [TokenAuthentication]
 
     def post(self, request):
+        request.user.auth_token.delete()
         logout(request)
         return Response({"detail": "Logout successful."})
 
@@ -229,6 +237,7 @@ def reset_balance(request):
 
 class BalanceView(APIView):
     permission_classes = [IsAuthenticated]
+    authentication_classes = [TokenAuthentication]
 
     def get(self, request, *args, **kwargs):
         user_profile = UserProfile.objects.get(user=request.user)
@@ -267,6 +276,7 @@ def change_leverage(request):
 
 class LeverageView(APIView):
     permission_classes = [IsAuthenticated] # What the hell is it authenticating? The logged in status? Not sure this would work, can add a token generation to login.
+    authentication_classes = [TokenAuthentication]
     
     def get(self, request, *args, **kwargs):
         user_profile = UserProfile.objects.get(user=request.user)
@@ -312,6 +322,7 @@ class RegisterView(generics.CreateAPIView):
 
 class ReferralsView(APIView): # IsAuthenticated is fine here. IsAuthenticated just checks if user is logged in although I'm not sure what it is authenticating currently.
     permission_classes = [IsAuthenticated]
+    authentication_classes = [TokenAuthentication]
 
     def get(self, request, *args, **kwargs):
         user_profile = UserProfile.objects.get(user=request.user)
