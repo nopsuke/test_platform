@@ -41,6 +41,7 @@ INSTALLED_APPS = [
     "accounts",
     "trading",
     "rest_framework",
+    "rest_framework.authtoken",
     "api",
     "frontend",
     "corsheaders",
