@@ -13,6 +13,11 @@ class UserSerializer(serializers.ModelSerializer):
                 'required': True
             }
         }
+
+    def validate_email(self, value):
+        if CustomUser.objects.filter(email=value).exists():
+            raise serializers.ValidationError("Email is already in use")
+        return value
     
     def create(self, validated_data):
         user = CustomUser.objects.create_user(**validated_data)
