@@ -57,7 +57,7 @@ const RegisterForm = () => {
     //D - Use error handling. On a very basic level check if username === ""
     // you did that in the other file
 // axios wont work, need to implement a token system otherwise it'll send a 403 error. E - solved with django-cors-headers.
-    const url = "http://localhost:8000/api/api/register/"
+    const url = "http://localhost:8000/api/register/"
 
     console.log(`Attempting to post: ${url}`);
     
