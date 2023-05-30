@@ -8,6 +8,7 @@ from trading.models import Trade
 from trading.market_data import buy_order
 import string
 import random
+import logging
 from rest_framework import generics
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
@@ -18,6 +19,10 @@ from django.contrib.auth import get_user_model
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.authentication import TokenAuthentication
 from rest_framework.authtoken.models import Token
+from django.contrib import messages 
+
+logger = logging.getLogger(__name__)
+
 
 
 """def register(request):
@@ -91,39 +96,6 @@ from rest_framework.authtoken.models import Token
 
 # User is generated as intended but referral code is not generated. All other data seems to OK as well.
 class RegisterView(APIView):
-    def post(self, request):
-        serializer = UserSerializer(data=request.data)
-
-        if serializer.is_valid():
-            user = serializer.save()
-            login(request, user)
-            token, created = Token.objects.get_or_create(user=user) # This should add a new token to the database if the user doesn't have one already.
-
-            # Generate a referral code for the new user
-            new_user_referral_code = self.generate_referral_code()
-
-            # Ensure the referral code is unique
-            while UserProfile.objects.filter(referral_code=new_user_referral_code).exists():
-                new_user_referral_code = self.generate_referral_code()
-
-            # The UserProfile should already have been created by the signal
-            user_profile = UserProfile.objects.get(user=user)
-            user_profile.referral_code = new_user_referral_code
-
-            # If the new user was referred by someone else, set the referrer
-            referral_code = request.data.get('referral_code', None)
-            if referral_code:
-                try:
-                    referrer_profile = UserProfile.objects.get(referral_code=referral_code)
-                    user_profile.referrer = referrer_profile.user
-                except UserProfile.DoesNotExist:
-                    pass
-
-            user_profile.save()
-
-            return Response({"token": token.key, "message": "User registered successfully"}, status=status.HTTP_201_CREATED)
-
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
     @staticmethod
     def generate_referral_code():
@@ -131,7 +103,49 @@ class RegisterView(APIView):
             code = ''.join(random.choices(string.ascii_uppercase + string.digits, k=8))
             if not UserProfile.objects.filter(referral_code=code).exists():
                 return code
+
+    
+    def post(self, request):
+        print("RegisterView POST method called")
+        serializer = UserSerializer(data=request.data)
+
+        if serializer.is_valid():
+            logger.debug("Serializer is valid")
+            user = serializer.save()
+            login(request, user)
+            token, created = Token.objects.get_or_create(user=user) # This should add a new token to the database if the user doesn't have one already.
+
+            # Generate a referral code for the new user
+            new_user_referral_code = self.generate_referral_code()
             
+            
+            try:
+                user_profile = UserProfile.objects.get(user=user)
+                user_profile.referral_code = new_user_referral_code
+
+            except Exception as e:
+                print("UserProfile does not exist", str(e))
+                
+
+            # If the new user was referred by someone else, set the referrer
+            referring_code = request.data.get('referral_code', None)
+            if referring_code:
+                try:
+                    referrer_profile = UserProfile.objects.get(referral_code=referring_code)
+                    user_profile.referrer = referrer_profile.user
+                except UserProfile.DoesNotExist:
+                    logger.error("Referred UserProfile does not exist")
+                    pass
+
+            user_profile.save()
+            logger.debug("User profile saved")
+
+            return Response({"token": token.key, "message": "User registered successfully"}, status=status.HTTP_201_CREATED)
+        
+        logger.error("Serializer is invalid. Errors: %s", serializer.errors)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
 
 
 class BuyOrderView(APIView):
@@ -177,6 +191,7 @@ class LoginView(APIView): # Need to look into rest_framework.authtoken.views.obt
 
 
     def post(self, request, *args, **kwargs):
+        print("Starting LoginView")
         form = AuthenticationForm(data=request.data)
         if form.is_valid():
             user = form.get_user()
@@ -315,9 +330,9 @@ def referrals(request):
 
 """
 
-class RegisterView(generics.CreateAPIView):
-    queryset = CustomUser.objects.all()
-    serializer_class = UserSerializer
+#class RegisterView(generics.CreateAPIView):
+ #   queryset = CustomUser.objects.all()
+  #  serializer_class = UserSerializer
 
 
 class ReferralsView(APIView): # IsAuthenticated is fine here. IsAuthenticated just checks if user is logged in although I'm not sure what it is authenticating currently.
