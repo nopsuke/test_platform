@@ -11,6 +11,7 @@ https://docs.djangoproject.com/en/4.2/ref/settings/
 """
 
 from pathlib import Path
+import os
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -31,7 +32,7 @@ ALLOWED_HOSTS = []
 # Application definition
 
 INSTALLED_APPS = [
-    "daphne",
+    #"daphne",
     "django.contrib.admin",
     "django.contrib.auth",
     "django.contrib.contenttypes",
@@ -48,7 +49,7 @@ INSTALLED_APPS = [
     
 ]
 
-ASGI_APPLICATION = 'monreal.asgi.application'
+#ASGI_APPLICATION = 'monreal.asgi.application'
 
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
@@ -146,11 +147,11 @@ LOGIN_REDIRECT_URL = 'dashboard'
 LOGOUT_REDIRECT_URL = 'home'
 
 
-CHANNEL_LAYERS = {
-    'default': {
-        'BACKEND': 'channels.layers.InMemoryChannelLayer',
-    },
-}
+# CHANNEL_LAYERS = {
+#    'default': {
+#        'BACKEND': 'channels.layers.InMemoryChannelLayer',
+#    },
+#}
 
 CORS_ALLOWED_ORIGINS = [
     'http://localhost:3000',
@@ -164,5 +165,27 @@ REST_FRAMEWORK = {
         "rest_framework.authentication.BasicAuthentication",
         "rest_framework.authentication.SessionAuthentication",
     ],
+}
+LOGGING = {
+    "version": 1,  # the dictConfig format version
+    "disable_existing_loggers": False,  # retain the default loggers
+    "handlers": {
+        "file": {
+            "class": "logging.FileHandler",
+            "filename": "debug.log",
+            "level": "DEBUG",
+        },
+    },
+    "loggers": {
+        "monreal" : {
+            "handlers": ["file"],
+            "level": "DEBUG",
+        },
+        "monreal.accounts" : {
+            "handlers": ["file"],
+            "level": "DEBUG",
+        },
+
+    },
 }
 
