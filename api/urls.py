@@ -2,6 +2,7 @@ from django.urls import path
 from . import views
 from accounts import views as accounts_views
 from accounts import urls as accounts_urls
+from accounts.views import RegisterView
 
 urlpatterns = [
     path('users/', views.UserList.as_view(), name='user-list'),
@@ -12,6 +13,6 @@ urlpatterns = [
     path('orders/buy/', views.create_buy_order, name='create_buy_order'),
     path('orders/sell/', views.create_sell_order, name='create_sell_order'),
     path('equity/', views.get_equity, name='get_equity'),
-    path("api/register/", accounts_urls.RegisterView.as_view(), name="register"),
+    path("register/", RegisterView.as_view(), name="register"),
 ]
 

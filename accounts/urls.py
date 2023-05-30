@@ -14,7 +14,7 @@ urlpatterns = [
     path("api/logout/", auth_views.LogoutView.as_view(next_page='home'), name="logout"), # Not sure if this is correct.
     path('api/balance/', BalanceView.as_view(), name='balance'),
     # OLD path('change_leverage/', views.change_leverage, name='change_leverage'),
-    path("api/register/", RegisterView.as_view(), name="register"),
+    #path("api/register/", RegisterView.as_view(), name="register"),
     path("api/Referral/", ReferralsView.as_view(), name="Referral"),
     path("api/leverage/", LeverageView.as_view(), name="leverage"),
 ]
