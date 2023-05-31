@@ -14,7 +14,7 @@ from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.views import APIView
-from .serializers import UserSerializer, UserProfileSerializer
+from .serializers import UserSerializer, UserProfileSerializer, LoginSerializer
 from django.contrib.auth import get_user_model
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.authentication import TokenAuthentication
@@ -186,7 +186,7 @@ def home(request):
         form = AuthenticationForm()
     return render(request, 'accounts/login.html', {'form': form})"""
 
-class LoginView(APIView): # Need to look into rest_framework.authtoken.views.obtain_auth_token and implement here and in a few other places but dont know how to generate tokens etc.
+"""class LoginView(APIView): # Need to look into rest_framework.authtoken.views.obtain_auth_token and implement here and in a few other places but dont know how to generate tokens etc.
     authentication_classes = [TokenAuthentication]
 
 
@@ -199,7 +199,22 @@ class LoginView(APIView): # Need to look into rest_framework.authtoken.views.obt
             token, created = Token.objects.get_or_create(user=user)
             return Response({"token": token.key, "message": "User logged in successfully"}, status=status.HTTP_200_OK)
         else:
-            return Response(form.errors, status=status.HTTP_400_BAD_REQUEST)
+            return Response(form.errors, status=status.HTTP_400_BAD_REQUEST)"""
+
+class LoginView(APIView):
+    authentication_classes = [TokenAuthentication]
+
+    def post(self, request, *args, **kwargs):
+        print("Starting LoginView")
+        serializer = LoginSerializer(data=request.data, context={'request': request})
+
+        if serializer.is_valid():
+            user = serializer.validated_data['user']
+            login(request, user)
+            token, created = Token.objects.get_or_create(user=user)
+            return Response({"token": token.key, "message": "User logged in successfully"}, status=status.HTTP_200_OK)
+        else:
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
         
 
 """@login_required

@@ -2,7 +2,7 @@ from django.urls import path
 from . import views
 from accounts import views as accounts_views
 from accounts import urls as accounts_urls
-from accounts.views import RegisterView
+from accounts.views import RegisterView, LoginView, LogoutView
 
 urlpatterns = [
     path('users/', views.UserList.as_view(), name='user-list'),
@@ -14,5 +14,7 @@ urlpatterns = [
     path('orders/sell/', views.create_sell_order, name='create_sell_order'),
     path('equity/', views.get_equity, name='get_equity'),
     path("register/", RegisterView.as_view(), name="register"),
+    path("login/", LoginView.as_view(), name="login"),
+    path("logout/", LogoutView.as_view(), name="logout"),
 ]
 
