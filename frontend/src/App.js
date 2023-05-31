@@ -1,18 +1,33 @@
 import { useState, useEffect } from "react";
 import HomePage from "./Components/HomePage";
-import { BrowserRouter as Router, Route, Routes } from "react-router-dom"; // The Router lives at the root of the project so that all components that you create can be accessed
+import { 
+  Router,
+  Routes, 
+  Route,
+  useNavigate,
+  Link } from "react-router-dom"; // The Router lives at the root of the project so that all components that you create can be accessed
 import RegisterForm from "./Components/RegisterForm";
 import Header from "./Components/Header";
+import LoginForm from "./Components/LoginForm";
+import Profile from "./Components/Profile";
+import Navbar from "./Components/Navbar";
+import TradeBoard from "./Components/TradeBoard";
+import PrivateRoute from "./Components/PrivateRoute";
 
 const App = () => {
   const [user, setUser] = useState() // E - I want to use this to store the user data upon successfully logging in. I'm not sure if this is the correct approach though.
+  const [authenticated, setAuthenticated] = useState(localStorage.getItem("token") ? true : false);
 
 
 // E - I think I should be using useEffect to fetch the user related data from the API and then use useState to set the state of the data. I don't know what the logical approach is here.
   useEffect(() => {
+    const token = localStorage.getItem("token");
+    if (token) {
+      setAuthenticated(true);
+    }
+  }, []);
     
    
-  });
 
 
 // E - This would fetch the current balance. This should be a constantly evolving number though, so I'm not sure if this is the right approach. 
@@ -46,7 +61,7 @@ const App = () => {
 
     const data = await res.json()
 
-    return data // E - I want to provide some kind of feedback to the user if the registration was successful or not. But I'm not sure if Django will handle that through its user.authentication 
+    return data 
 
   }
 
@@ -54,21 +69,19 @@ const App = () => {
 
   return (
     
+    <div>
+      <Header title="This is David teaching and Evert trying to learn" />
+        <Routes>
+          <Route path="/" element={<Navbar />} />
+          <Route path="/login" element={<LoginForm onLogin={() => setAuthenticated(true)} />} />
+          <Route path="/profile" element={<PrivateRoute><Profile /></PrivateRoute>} />
+          <Route path="/register" element={<RegisterForm onRegister={registerUser} />} />
+          <Route path="/tradeboard" element={<PrivateRoute><TradeBoard /></PrivateRoute>}  />
+        </Routes>
 
-    <Router>
-      <div className="container">
-        <Header title="This is David teaching and Evert trying to learn" />
-        
-
-        <RegisterForm />
-        
-
-      </div>
-    </Router>
+    </div>
   );
 }
 
 export default App;
 
-
-//E - This router structure is a bit confusing. Throwing random errors about not being able to use as a child of another component but I'm sure I'll make do.

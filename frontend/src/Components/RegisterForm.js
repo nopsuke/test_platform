@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import axios from "axios";
+import { useNavigate } from "react-router-dom";
 
 /*
     D - This code is definitely working and functional!
@@ -19,6 +20,8 @@ import axios from "axios";
     3. Funnily enough, I didn't destructure in my practise site because I thought just using generic "e" was easier to read. I'll try to use destructuring more often.
     4. I'll change the class name to formCont once I get some style ideas. It's just a generic class name I found on a tutorial :D.
 
+    This works as intended.
+
 
 */
 
@@ -30,6 +33,7 @@ const RegisterForm = () => {
     password: "",
   });
   // const [username, setUsername] = useState(""); E - I had to remove this. I couldn't figure out the double binding and I am desperate to try and register a user :D.
+  const navigate = useNavigate();
 
   const updateFormData = (e) => {
     //destructuring
@@ -68,6 +72,7 @@ const RegisterForm = () => {
         if (response.status >= 200 && response.status < 300) { 
           localStorage.setItem("token", response.data.token) 
           setAuthenticated(true)
+          navigate("/profile/");
         }
       })
       .catch((error) => { // I added a bunch of error logging because I couldn't figure out what was going wrong. Is it good practise to keep this in? I'll add more error handling later.
