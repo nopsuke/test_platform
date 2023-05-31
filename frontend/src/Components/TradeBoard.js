@@ -1,5 +1,5 @@
 import React, { useEffect, useRef } from 'react'
-import { ChartComponent } from './ChartComponent'
+import { Chart } from './ChartComponent'
 
 // This will hold the main "TradeBoard" page/tab. Will hold "TradeChart", "TradeHistory", "BuySellForm", and some other components which are tbd.
 // Will require authentication to view.
@@ -15,7 +15,7 @@ const TradeBoard = () => {
   
   return (
     <div>This isn't supposed to be here...
-    <ChartComponent data={data}/>
+    <Chart data={data}/>
     </div>
 
   )

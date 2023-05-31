@@ -66,7 +66,7 @@ const initialData = [
 	{ time: '2018-12-31', value: 22.67 },
 ];
 
-export function TradeBoard(props) {
+export function Chart(props) {
 	return (
 		<ChartComponent {...props} data={initialData}></ChartComponent>
 	);

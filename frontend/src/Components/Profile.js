@@ -14,7 +14,7 @@ const Profile = () => {
         <Link to="/profile" style={{ padding: "10px" }}>
           Profile
         </Link>
-        <Link to="/Tradeboard" style={{ padding: "10px" }}>
+        <Link to="/tradeboard" style={{ padding: "10px" }}>
           Tradeboard
         </Link>
       </nav>
