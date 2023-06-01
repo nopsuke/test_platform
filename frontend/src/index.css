@@ -110,3 +110,49 @@ footer {
   margin-top: 30px;
   text-align: center;
 }
+
+
+.buyorder {
+  display: grid;
+  margin: 5px;
+  padding: 10px 20px;
+  inline-size: 15%;
+  background-color: #2adf24;
+  
+}
+
+.buyorder input {
+  width: 90%;
+  height: 30px;
+  margin: 5px;
+  padding: 3px 7px;
+  font-size: 13px;
+}
+
+.sellorder {
+  display: grid;
+  margin: 5px;
+  padding: 10px 20px;
+  inline-size: 15%;
+  background-color: #e74c3c;
+  
+}
+
+.sellorder input{
+  width: 90%;
+  height: 30px;
+  margin: 5px;
+  padding: 3px 7px;
+  font-size: 13px;
+}
+
+#ProfileDashboard {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  grid-gap: 10px;
+  margin: 5px;
+  padding: 10px 20px;
+  inline-size: 15%;
+  background-color: #e74c3c;
+  
+}

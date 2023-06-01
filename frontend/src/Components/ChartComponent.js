@@ -64,6 +64,7 @@ const initialData = [
 	{ time: '2018-12-29', value: 23.92 },
 	{ time: '2018-12-30', value: 22.68 },
 	{ time: '2018-12-31', value: 22.67 },
+	{ time: '2019-01-01', value: 23.46 },
 ];
 
 export function Chart(props) {

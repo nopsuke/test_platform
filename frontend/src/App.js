@@ -70,7 +70,7 @@ const App = () => {
   return (
     
     <div>
-      <Header title="This is David teaching and Evert trying to learn" />
+      <Header title= "I'm learning!" />
         <Routes>
           <Route path="/" element={<Navbar />} />
           <Route path="/login" element={<LoginForm onLogin={() => setAuthenticated(true)} />} />
@@ -78,6 +78,7 @@ const App = () => {
           <Route path="/register" element={<RegisterForm onRegister={registerUser} />} />
           <Route path="/tradeboard" element={<PrivateRoute><TradeBoard /></PrivateRoute>}  />
         </Routes>
+        <p>Design stuff here somewhere</p>
 
     </div>
   );

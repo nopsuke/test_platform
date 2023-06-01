@@ -87,7 +87,7 @@ const RegisterForm = () => {
 
       });
   };
-// I don't think the token is being received. Will need to look into that.
+// I don't think the token is being received. Will need to look into that. Works
 
   return (
     <form className="container" onSubmit={handleSubmit}>
