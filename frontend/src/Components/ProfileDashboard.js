@@ -4,7 +4,9 @@ import React from 'react'
 // Will require authentication to view
 const ProfileDashboard = () => {
   return (
-    <div>This is where the user info will go</div>
+    <div id="ProfileDashboard" class="container" >
+
+    </div>
   )
 }
 
