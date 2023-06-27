@@ -11,8 +11,8 @@ def fetch_time_series_data(symbol, interval='15min', output_size='compact'):
     response = requests.get(url)
     return response.json()
 
-def fetch_current_price(symbol): # This has a WS implementation but I'm pretty sure it's broken. This should probably connect to the dealer and get the price from there.
-    return ws.get_current_price(symbol)
+#def fetch_current_price(symbol): # This has a WS implementation but I'm pretty sure it's broken. This should probably connect to the dealer and get the price from there.
+    #return ws.get_current_price(symbol)
 
 
 
@@ -28,6 +28,7 @@ def fetch_current_price(symbol):
 
 
 # Should be able to use this to get the current price from the virtual dealer
+"""
 def buy_order(user_profile, symbol, quantity, price, leverage, stop_loss=None):
     price = fetch_current_price(symbol)
     amount = price * quantity
@@ -135,3 +136,6 @@ def calculate_equity(user_profile): # Needs a background task to update the equi
     equity = user_profile.balance + total_position_value
     return equity
 
+"""
+
+    

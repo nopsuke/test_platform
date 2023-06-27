@@ -1,5 +1,5 @@
 from django.urls import path
-from .views import index
+
 from django.contrib.auth import views as auth_views
 
 app_name = 'frontend'
@@ -12,5 +12,5 @@ urlpatterns = [
     #path('reset_balance/', views.reset_balance, name='reset_balance'),
     #path('change_leverage/', views.change_leverage, name='change_leverage'),
     #path("referrals/", views.referrals, name="referrals"),
-    path("", index, name="index")
+    #path("", index, name="index")
 ]

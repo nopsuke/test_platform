@@ -27,7 +27,7 @@ class UserSerializer(serializers.ModelSerializer):
 class UserProfileSerializer(serializers.ModelSerializer):
     class Meta:
         model = UserProfile
-        fields = ["id", 'balance', 'avatar', 'bio', 'leverage', 'margin_level', 'open_positions', 'referral_code', 'referrer']
+        fields = ["id", 'balance', 'avatar', 'bio', 'leverage', 'referral_code', 'referrer']
 
 
 class LoginSerializer(serializers.Serializer):

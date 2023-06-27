@@ -1,52 +1,70 @@
 from polygon import WebSocketClient
 from polygon.websocket.models import WebSocketMessage, Market
 from typing import List
-from threading import Thread
-""""
+import logging
+import threading
+import redis
+import json
+import time
+import os
+from celery import shared_task
+logger = logging.getLogger(__name__)
+ws = None
+
 class MyWebSocketClient(WebSocketClient):
-    def __init__(self, api_key, market, subscriptions):
-        super().__init__(api_key, market, subscriptions)
-        self.current_prices = {}
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.latest_prices = {}
+        self.redis_client = redis.Redis(host='localhost', port=6379, db=0)
+        
+    
+
+
+    def handle_message(self, msg: List[WebSocketMessage]):
+        for m in msg:
+            # 'pair' is the field for symbol and 'close' for latest price
+            if hasattr(m, 'pair') and hasattr(m, 'close'):
+                self.latest_prices[m.pair] = m.close
+                self.redis_client.setex(m.pair, 600, json.dumps({'price': m.close, 'timestamp': time.time()})) # Store data for 10 minutes
 
     def on_open(self):
-        print("Websocket connection opened")
-
-    def on_close(self):
-        print("Websocket connection closed")
-
-    def on_message(self, msgs: List[WebSocketMessage]):
-        for m in msgs:
-            if m.subject and m.subject.endswith("BTC-USD"):
-                # Extract price information from the message and update the current price
-                price = m.message_data['p']#
-                print(f"Updated price for {m.subject} to {price}")
-
-    def on_error(self, error):
-        print(f"An error occurred: {error}")
+        logger.info(f"Websocket connection opened")
+        
 
     def get_current_price(self, symbol):
-        # Returns the most recent price for a given symbol
-        return self.current_prices.get(symbol)
+
+        if symbol in self.latest_prices:
+            return self.latest_prices[symbol]
+        else:
+            return "Issue with data feed"
+        
+        return self.latest_prices.get(symbol, None)
     
+    def on_close(self):
+        logger.info(f"Websocket connection closed")
+        
     
-    def handle_msg(msgs: List[WebSocketMessage]):
-        for m in msgs:
-            print(m)
+    def run(self):
+        super().run(handle_msg=self.handle_message)
 
-ws = MyWebSocketClient(api_key="XXXXXXXXXXXXX", market=Market.Crypto, subscriptions=["XA.BTC-USD"])
 
-def start_websocket():
-    try:
-        ws.run(handle_msg=ws.handle_msg)
-    except Exception as e:
-        print(f"An error occurred: {e}")
+#ws = MyWebSocketClient(api_key="znfXR7OLa31mT1BPHuSl60vIl_syeOoQ", market=Market.Crypto, subscriptions=["XT.BTC-USD"])
 
-websocket_thread = Thread(target=start_websocket)
-websocket_thread.start()
+#def start_ws_client():
+    #ws.run()
 
-# This is pretty fucked, need to go at this again or change over to virtual dealer for pricefeed. Would make more sense. That's in JS though..
-# Don't think this works, but maybe can be adapted to work. The dealer plugin does have the data stream sorted though, so maybe can implement that into this project?
+#threading.Thread(target=start_ws_client).start()
 
-"""
 
-ws = WebSocketClient
+
+# To keep the script running, preventing it from exiting before any data is received.
+# NEED TO FIX THIS, SOMETIMES DATA JUST STOPS?
+# I'm connecting to the ws via different API calls so it's duplicating the connections and I'm getting disconnected.
+# Have Redis take the whole data feed for 10 minutes, have everything else gather data from there. Much more efficient way of accessing the data.
+# Made some changes, lets see..
+
+
+#HAVE TO REDO THE WHOLE THING, THIS A FUCKING MESS.
+
+
+

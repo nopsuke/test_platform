@@ -2,11 +2,13 @@ import React, { useEffect, useRef } from 'react'
 import { Chart } from './ChartComponent'
 import BuyOrder from './BuyOrder'
 import SellOrder from './SellOrder'
+import CloseOrder from './CloseOrder'
 import { Link } from 'react-router-dom'
 
 
 // This will hold the main "TradeBoard" page/tab. Will hold "TradeChart", "TradeHistory", "BuySellForm", and some other components which are tbd.
 // Will require authentication to view.
+// Data function to receive data from backend and pass to "TradeChart" component.
 
 const TradeBoard = () => {
   const data = [
@@ -34,6 +36,7 @@ const TradeBoard = () => {
     <Chart data={data}/>
 
     <BuyOrder /><SellOrder />
+    <CloseOrder />
     
 
     </div>

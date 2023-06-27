@@ -45,6 +45,7 @@ INSTALLED_APPS = [
     "rest_framework.authtoken",
     "api",
     "frontend",
+    "polygon",
     "corsheaders",
     
 ]
@@ -174,18 +175,55 @@ LOGGING = {
             "class": "logging.FileHandler",
             "filename": "debug.log",
             "level": "DEBUG",
+            "formatter": "verbose",
         },
+    },
+    "formatters": {
+        "verbose": {
+            "format": "%(asctime)s %(levelname)s %(module)s " "%(process)d %(thread)d %(message)s"
+        },
+    },
+    "root": {
+        "handlers": ["file"],
+        "level": "DEBUG",
     },
     "loggers": {
         "monreal" : {
             "handlers": ["file"],
             "level": "DEBUG",
+            "propagate": False,
         },
         "monreal.accounts" : {
             "handlers": ["file"],
             "level": "DEBUG",
+            "propagate": False,
         },
+        "monreal.trading" : {
+            "handlers": ["file"],
+            "level": "DEBUG",
+            "propagate": False,
+        },
+        
 
     },
+}
+
+
+CELERY_BROKER_URL = 'redis://localhost:6379'
+CELERY_RESULT_BACKEND = 'redis://localhost:6379/0'
+
+CELERY_IMPORTS = ['monreal.celery',
+                    'accounts.tasks', 
+                  ]
+
+
+CELERY_BEAT_SCHEDULE = {
+
+
+    "update-positions-every-60-seconds": {
+        "task": "accounts.tasks.db_update_task",
+        "schedule": 15.0,
+    },
+
 }
 

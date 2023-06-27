@@ -4,13 +4,17 @@ import { useState } from 'react'
 
 // E - I don't know if the BuyOrder and SellOrder should be separate components or if they should be combined into one component. Thoughts?
 
-
+// Need to take the user profile that is logged in (where can I access that?) and send it with the formdata, I think?
 const BuyOrder = () => {
   const [formData, setFormData] = useState({
+    symbol: "",
+    quantity: "",
     price: "",
     size: "",
     stoploss: "",
   });
+
+  const token = localStorage.getItem("token");
 
   const updateFormData = (e) => {
     const { name, value } = e.target;
@@ -22,15 +26,24 @@ const BuyOrder = () => {
       alert("Please add a price");
       return;
     }
-    if (!formData.size) {
+    if (!formData.quantity) {
       alert("Please enter a trade size");
       return;
     }
 
-    const url = "http://localhost:8000/api/orders/buy/" // Wrong API endpoint currently.
+    const url = "http://localhost:8000/api/market_buy/" // Wrong API endpoint currently.
     console.log(`Attempting to post: ${url}`);
-    axios
-      .post(url, formData)
+    axios({
+      method: "post",
+      url: url,
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": "Token " + token,
+      },
+      data: formData,
+    
+    })
+
       .then((response) => {
         console.log(response.data)
         if (response.status >= 200 && response.status < 300) {
@@ -52,6 +65,27 @@ const BuyOrder = () => {
   return (
     <form>
       <div className="buyorder">
+
+        <label>
+          Symbol
+          <input
+            type="text"
+            name="symbol"
+            value={formData.symbol}
+            onChange={updateFormData}
+          />
+        </label>
+
+        <label>
+          Size
+          <input
+            type="text"
+            name="quantity"
+            value={formData.quantity}
+            onChange={updateFormData}
+          />
+        </label>
+
         <label>
           Price
           <input
@@ -61,17 +95,7 @@ const BuyOrder = () => {
             onChange={updateFormData}
           />
         </label>
-      
-      
-        <label>
-          Size
-          <input
-            type="text"
-            name="size"
-            value={formData.size}
-            onChange={updateFormData}
-          />
-        </label>
+    
       
       
         <label>

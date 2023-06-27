@@ -12,21 +12,63 @@ class CustomUser(AbstractUser):
     def __str__(self):
         return self.username
     
-# If something goes haywire with this, its because there was a double balance.
+
 class UserProfile(models.Model):
     user = models.OneToOneField(get_user_model(), on_delete=models.CASCADE)
     avatar = models.ImageField(upload_to='avatars/', blank=True, null=True)
     bio = models.TextField(blank=True, null=True)
     balance = models.FloatField(default=5000.00)
-    leverage = models.FloatField(default=1.0)
-    margin_level = models.FloatField(default=100.0)
-    open_positions = models.JSONField(default=dict)
+    leverage = models.FloatField(default=20.0)
     referral_code = models.CharField(max_length=20, unique=True, blank=True, null=True)
     referrer = models.ForeignKey(get_user_model(), on_delete=models.SET_NULL, blank=True, null=True, related_name='referrals')
 
     def __str__(self):
         return self.user.username
-    
+
+
+POSITION_DIRECTIONS = [
+   ('LONG', 'Long'),
+   ('SHORT', 'Short'),
+]
+
+class OpenPositions(models.Model):
+    user_profile = models.ForeignKey(UserProfile, on_delete=models.CASCADE)
+    symbol = models.CharField(max_length=15)
+    direction = models.CharField(max_length=5, choices=POSITION_DIRECTIONS)
+    quantity = models.FloatField()
+    open_price = models.FloatField()
+    open_time = models.DateTimeField(auto_now_add=True)
+    stop_loss = models.FloatField(null=True, blank=True)
+    leverage = models.FloatField(default=20.0)
+    liquidation_price = models.FloatField(null=True, blank=True)
+    margin_used = models.FloatField(default=0.0)
+    maintenance_amount = models.FloatField(default=0.0)
+    equity = models.FloatField(default=0.0)
+    profit_or_loss = models.FloatField(default=0.00)
+    funding_cost = models.FloatField(default=0.00)
+    funding_rate = models.FloatField(default=0.00)
+
+
+
+class ClosedPositions(models.Model):
+    user_profile = models.ForeignKey(UserProfile, on_delete=models.CASCADE)
+    symbol = models.CharField(max_length=15)
+    direction = models.CharField(max_length=5, choices=POSITION_DIRECTIONS)
+    quantity = models.FloatField()
+    open_price = models.FloatField()
+    close_price = models.FloatField()
+    open_time = models.DateTimeField()
+    close_time = models.DateTimeField(auto_now_add=True)
+    stop_loss = models.FloatField(null=True, blank=True)
+    profit_or_loss = models.FloatField(default=0.00)
+    leverage = models.FloatField(default=20.0)
+    fund_cost = models.FloatField(default=0.00)
+
+
+
+
+
+
 
 @receiver(post_save, sender=get_user_model())
 def create_user_profile(sender, instance, created, **kwargs):

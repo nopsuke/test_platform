@@ -7,9 +7,7 @@ import { useState } from 'react'
 
 const SellOrder = () => {
   const [formData, setFormData] = useState({
-    price: "",
-    size: "",
-    stoploss: "",
+    id: "",
   });
 
   const updateFormData = (e) => {
@@ -18,23 +16,20 @@ const SellOrder = () => {
   };
   const handleSubmit = (e) => {
     e.preventDefault();
-    if (!formData.price) {
+    if (!formData.id) {
       alert("Please add a price");
       return;
     }
-    if (!formData.size) {
-      alert("Please enter a trade size");
-      return;
-    }
 
-    const url = "http://localhost:8000/api/buyorder/" // Wrong API endpoint currently.
+
+    const url = "http://localhost:8000/api/closed_positions/" // Wrong API endpoint currently.
     console.log(`Attempting to post: ${url}`);
     axios
       .post(url, formData)
       .then((response) => {
         console.log(response.data)
         if (response.status >= 200 && response.status < 300) {
-          alert("Order placed successfully")
+          alert("Order closed successfully")
         }
       })
       .catch((error) => {
@@ -56,8 +51,8 @@ const SellOrder = () => {
           Price
           <input
             type="text"
-            name="price"
-            value={formData.price}
+            name="trade id"
+            value={formData.id}
             onChange={updateFormData}
           />
         </label>
