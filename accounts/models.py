@@ -66,6 +66,26 @@ class ClosedPositions(models.Model):
 
 
 
+class BattleGame(models.Model):
+    user_profile = models.ForeignKey(UserProfile, on_delete=models.CASCADE)
+    points = models.IntegerField(default=1000)
+    wins = models.IntegerField(default=0)
+    losses = models.IntegerField(default=0)
+    streak = models.IntegerField(default=0)
+
+    def record_win(self):
+        self.wins += 1
+        self.streak += 1
+        self.points += 3
+        if self.streak == 3:
+            self.points += 5
+        self.save()
+
+    def record_loss(self):
+        self.losses += 1
+        self.streak = 0
+        self.points -= 2
+        self.save()
 
 
 

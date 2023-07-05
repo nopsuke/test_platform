@@ -1,7 +1,7 @@
 from django.contrib.auth import login, logout
 from django.shortcuts import render, redirect
 from django.contrib.auth.forms import UserCreationForm, AuthenticationForm
-from accounts.models import CustomUser, UserProfile, OpenPositions,ClosedPositions
+from accounts.models import CustomUser, UserProfile, OpenPositions, ClosedPositions, BattleGame
 from django.db import transaction
 from accounts.forms import CustomUserCreationForm, BuyForm, LeverageChangeForm
 from django.contrib.auth.decorators import login_required
@@ -9,6 +9,7 @@ from trading.models import Trade
 import string
 import random
 import logging
+import time
 from rest_framework import generics
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
@@ -26,7 +27,9 @@ from decimal import Decimal
 import redis
 import json
 from .tasks import place_order_task, close_position_task
+from statistics import mean
 
+r = redis.Redis(host='localhost', port=6379, db=0)
 logger = logging.getLogger(__name__)
 # Works as intended after Celery changes.
 class MarketBuyOrderView(APIView):
@@ -37,20 +40,68 @@ class MarketBuyOrderView(APIView):
         symbol = request.data.get("symbol")
         quantity = request.data.get("quantity")
         stop_loss = request.data.get("stop_loss")
+        direction = request.data.get("direction")
         leverage = user_profile.leverage
 
         if not symbol or not quantity:
             raise ValidationError("Symbol and quantity are required.")
         
+        if not direction in ["LONG", "SHORT"]:
+            raise ValidationError("Direction must be either LONG or SHORT.")
+        
         try:
-            place_order_task.delay(user_profile.id, symbol, quantity, leverage, stop_loss)
-            return Response({"message": "Order is being processed."})
+            place_order_task.delay(user_profile.id, symbol, quantity, leverage, direction, stop_loss)
+            return Response({"message": "Order is being processed."}) # This return is awkward. Should be changed.
         except Exception as e:
             return Response({"error": str(e)}, status=400)
 
+class GameView(APIView):
+    authentication_classes = [TokenAuthentication]
 
+    @staticmethod
+    def get_game_result():
+        now = str(int(time.time() * 1000)) + "-0"
+        timestamp = str(int(time.time() * 1000) - 1000) + "-0"
 
-# User is generated as intended but referral code is not generated. All other data seems to OK as well.
+        stream_key = "BTC-USD: data"
+        messages = r.xrange(stream_key, min=timestamp, max=now)
+
+        prices = []
+        for message in messages:
+            data_str = message[1][b'data'].decode('utf-8')
+            data_list = json.loads(data_str)
+            for item in data_list:
+                price = float(item["price"])
+                prices.append(price)
+
+        price = mean(prices)
+        return price
+
+    def post(self, request):
+        user_profile = UserProfile.objects.get(user=request.user)
+        user_guess = request.data.get('guess')
+        
+        if not user_guess:
+            raise ValidationError("A guess is required.")
+        
+        price_start = self.get_game_result()
+        print("Price start: ", price_start)
+        print("Waiting for 15 seconds...")
+        time.sleep(15)
+        price_end = self.get_game_result()
+        
+        print("Price end: ", price_end)
+
+        result = "Bulls win!" if price_start < price_end else "Bears win!"
+        
+        battle_game, created = BattleGame.objects.get_or_create(user_profile=user_profile)
+        if user_guess.lower() == result.lower().split()[0]:
+            battle_game.record_win()
+        else:
+            battle_game.record_loss()
+        
+        return Response({"result": result, "points": battle_game.points, "wins": battle_game.wins, "losses": battle_game.losses})
+
 class RegisterView(APIView):
 
     @staticmethod
@@ -103,13 +154,14 @@ class RegisterView(APIView):
 
 
 
-# Works as intended after Celery changes.
+
 class ClosePositionView(APIView):
     authentication_classes = [TokenAuthentication]
     
 
     def post(self, request):
         open_position_id = request.data.get('id')
+    
 
         if not open_position_id:
             raise ValidationError("Position id is required.")
@@ -119,6 +171,8 @@ class ClosePositionView(APIView):
 
         if not open_position:
             raise ValidationError("No open position found for this user with this id.")
+        
+
         try:
             close_position_task.delay(open_position.id, user_profile.id)
             return Response({"message": "Position is closed."})
@@ -151,7 +205,7 @@ class LoginView(APIView):
     authentication_classes = [TokenAuthentication]
 
     def post(self, request, *args, **kwargs):
-        print("Starting LoginView")
+        
         serializer = LoginSerializer(data=request.data, context={'request': request})
 
         if serializer.is_valid():
@@ -175,10 +229,31 @@ class LogoutView(APIView):
         return Response({"detail": "Logout successful."})
 
 
+class ProfileDashboardView(APIView):
+    authentication_classes = [TokenAuthentication]
+
+    def get(self, request):
+        user_profile = UserProfile.objects.get(user=request.user)
+        user_profile_data = UserProfileSerializer(user_profile).data
+
+        # Query the ClosedPositions model for the trade with the most profit and loss
+        best_trade = ClosedPositions.objects.filter(user_profile=user_profile).order_by('-profit_or_loss').first()
+        worst_trade = ClosedPositions.objects.filter(user_profile=user_profile).order_by('profit_or_loss').first()
+
+        # Assuming the `symbol` and `profit_or_loss` fields are what you're interested in
+        user_profile_data['bestTrade'] = {
+            'symbol': best_trade.symbol if best_trade else None,
+            'profit_or_loss': best_trade.profit_or_loss if best_trade else None
+        }
+        user_profile_data['worstTrade'] = {
+            'symbol': worst_trade.symbol if worst_trade else None,
+            'profit_or_loss': worst_trade.profit_or_loss if worst_trade else None
+        }
+
+        return Response(user_profile_data)
 
 
-
-# I think this is for changing or resetting the balance.
+# I think this is for changing or resetting the balance. 
 class BalanceView(APIView):
     permission_classes = [IsAuthenticated]
     authentication_classes = [TokenAuthentication]

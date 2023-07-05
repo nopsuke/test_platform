@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import CustomUser, UserProfile 
+from .models import CustomUser, UserProfile
 from django.contrib.auth import authenticate
 
 class UserSerializer(serializers.ModelSerializer):
@@ -48,6 +48,5 @@ class LoginSerializer(serializers.Serializer):
 
         data['user'] = user
         return data
-
 
 # No idea if this works properly, need to test.

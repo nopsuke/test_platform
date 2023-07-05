@@ -32,7 +32,7 @@ ALLOWED_HOSTS = []
 # Application definition
 
 INSTALLED_APPS = [
-    #"daphne",
+    "daphne",
     "django.contrib.admin",
     "django.contrib.auth",
     "django.contrib.contenttypes",
@@ -50,7 +50,7 @@ INSTALLED_APPS = [
     
 ]
 
-#ASGI_APPLICATION = 'monreal.asgi.application'
+ASGI_APPLICATION = 'monreal.asgi.application'
 
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",

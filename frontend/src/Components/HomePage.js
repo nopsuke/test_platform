@@ -4,7 +4,7 @@ import ReferralsPage from "./ReferralsPage";
 
 
 const HomePage = () => {
-  return <div>HomePage</div>;
+  return <div>Homepage</div>;
 };
 
 export default HomePage;

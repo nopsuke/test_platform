@@ -1,20 +1,29 @@
-import React from 'react'
+import React, { useState } from 'react'
 import { Link } from 'react-router-dom'
+import "../Design/Navbar.css"
 
 
 const Navbar = () => {
-    return (
-      <nav style={{ textAlign: "center", marginTop: "20px" }}>
-        <Link to="/" style={{ padding: "10px" }}>
+
+
+
+
+
+  return (
+    <nav className="navbar">
+      <div className="navbar-links">
+        <Link to="/" className="navbar-link">
           Home
         </Link>
-        <Link to="/Login" style={{ padding: "10px" }}>
+        <Link to="/login" className="navbar-link">
           Login
         </Link>
-        <Link to="/register" style={{ padding: "10px" }}>
+        <Link to="/register" className="navbar-link">
           Register
         </Link>
-      </nav>
-    );
-  };
-  export default Navbar;
+      </div>
+    </nav>
+  );
+};
+
+export default Navbar;

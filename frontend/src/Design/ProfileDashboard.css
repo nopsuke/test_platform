@@ -1,0 +1,27 @@
+.profile-dashboard {
+    border: 2px solid #080808;
+    padding: 20px;
+    border-radius: 5px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    background-color: #c934dd;
+  }
+  
+  .profile-dashboard h2 {
+    font-size: 24px;
+    margin-bottom: 10px;
+    color: #333;
+  }
+  
+  .profile-dashboard p {
+    font-size: 16px;
+    margin-bottom: 8px;
+  }
+  
+  .profile-dashboard.loading {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 200px;
+    font-size: 18px;
+    color: #666;
+  }

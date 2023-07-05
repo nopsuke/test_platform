@@ -7,29 +7,52 @@ import { useState } from 'react'
 
 const SellOrder = () => {
   const [formData, setFormData] = useState({
-    id: "",
+    symbol: "",
+    quantity: "",
+    stop_loss: "",
+    direction: "SHORT",
   });
+
+  const token = localStorage.getItem("token");
 
   const updateFormData = (e) => {
     const { name, value } = e.target;
     setFormData({ ...formData, [name]: value });
   };
+
   const handleSubmit = (e) => {
     e.preventDefault();
-    if (!formData.id) {
-      alert("Please add a price");
+    if (!formData.quantity) {
+      alert("Please enter a trade size");
       return;
     }
 
-
-    const url = "http://localhost:8000/api/closed_positions/" // Wrong API endpoint currently.
+    const url = "http://localhost:8000/api/market_buy/" 
     console.log(`Attempting to post: ${url}`);
-    axios
-      .post(url, formData)
-      .then((response) => {
+    axios({
+      method: "post",
+      url: url,
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": "Token " + token,
+      },
+      data: {
+        symbol: formData.symbol,
+        quantity: formData.quantity,
+        stop_loss: formData.stop_loss ? formData.stop_loss : null,
+        direction: formData.direction,
+      },
+    })
+    .then((response) => {
         console.log(response.data)
         if (response.status >= 200 && response.status < 300) {
-          alert("Order closed successfully")
+          alert("Order placed successfully")
+          setFormData({
+            symbol: "",
+            quantity: "",
+            stop_loss: "",
+            direction: "SHORT",
+          });
         }
       })
       .catch((error) => {
@@ -44,41 +67,78 @@ const SellOrder = () => {
       });
   };
 
+  const sellOrderStyle = {
+    display: 'flex',
+    flexDirection: 'column',
+    alignItems: 'center',
+    backgroundColor: 'red',
+    padding: '20px',
+    borderRadius: '5px',
+  };
+
+  const labelStyle = {
+    marginBottom: '10px',
+    display: 'flex',
+    flexDirection: 'column',
+    alignItems: 'flex-start',
+    width: '100%',
+    color: 'white',
+    fontSize: '14px',
+    fontWeight: 'bold',
+  };
+
+  const inputStyle = {
+    marginBottom: '10px',
+    padding: '5px',
+    width: '100%',
+  };
+
+  const buttonStyle = {
+    padding: '10px',
+    backgroundColor: 'white',
+    color: 'black',
+    border: 'none',
+    borderRadius: '5px',
+    cursor: 'pointer',
+  };
   return (
     <form>
-      <div className="sellorder">
-        <label>
-          Price
-          <input
+      <div style={sellOrderStyle}>
+        <label style={labelStyle}>
+          Symbol
+          <input 
             type="text"
-            name="trade id"
-            value={formData.id}
+            name="symbol"
+            value={formData.symbol}
             onChange={updateFormData}
+            style={inputStyle}
           />
         </label>
       
       
-        <label>
+        <label style={labelStyle}>
           Size
           <input
             type="text"
-            name="size"
-            value={formData.size}
+            name="quantity"
+            value={formData.quantity}
             onChange={updateFormData}
+            style={inputStyle}
           />
         </label>
       
       
-        <label>
+        <label style={labelStyle}>
           Stop Loss
           <input
             type="text"
-            name="stoploss"
-            value={formData.stoploss}
+            name="stop_loss"
+            value={formData.stop_loss}
             onChange={updateFormData}
+            style={inputStyle}
           />
         </label>
-        <button type="submit" onClick={handleSubmit}>
+        <button type="submit" onClick={handleSubmit} style={buttonStyle}>
           Submit Order
         </button>
       </div>

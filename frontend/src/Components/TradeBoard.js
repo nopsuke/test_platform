@@ -4,6 +4,7 @@ import BuyOrder from './BuyOrder'
 import SellOrder from './SellOrder'
 import CloseOrder from './CloseOrder'
 import { Link } from 'react-router-dom'
+import '../Design/Tradeboard.css'
 
 
 // This will hold the main "TradeBoard" page/tab. Will hold "TradeChart", "TradeHistory", "BuySellForm", and some other components which are tbd.
@@ -21,31 +22,40 @@ const TradeBoard = () => {
 
   
   return (
-    <div>
-    
-    <nav style={{ textAlign: "center", marginTop: "20px" }}>
-        <Link to="/profile" style={{ padding: "10px" }}>
+    <div className="container">
+      <nav className="header">
+        <Link to="/profile" className="btn">
           Profile
         </Link>
-        <Link to="/tradeboard" style={{ padding: "10px" }}>
+        <Link to="/tradeboard" className="btn">
           Tradeboard
         </Link>
       </nav>
-      <h1 style={{ textAlign: "center", color: "purple" }}>TradeBoard</h1>
+      <h1 className="header">TradeBoard</h1>
 
-    <Chart data={data}/>
+      <div className="chart-container">
+        <Chart data={data} />
+      </div>
 
-    <BuyOrder /><SellOrder />
-    <CloseOrder />
-    
-
+      <div className="order-container">
+        <div className="order-item">
+          <div className="buyorder">
+            <BuyOrder />
+          </div>
+        </div>
+        <div className="order-item">
+          <div className="sellorder">
+            <SellOrder />
+          </div>
+        </div>
+        <div className="order-item">
+          <div className="closeorder">
+            <CloseOrder />
+          </div>
+        </div>
+      </div>
     </div>
- 
-    
+  );
+};
 
-  )
-
-
-}
-
-export default TradeBoard
+export default TradeBoard;

@@ -2,16 +2,15 @@ import React from 'react'
 import axios from 'axios'
 import { useState } from 'react'
 
-// E - I don't know if the BuyOrder and SellOrder should be separate components or if they should be combined into one component. Thoughts?
 
-// Need to take the user profile that is logged in (where can I access that?) and send it with the formdata, I think?
+
+
 const BuyOrder = () => {
   const [formData, setFormData] = useState({
     symbol: "",
     quantity: "",
-    price: "",
-    size: "",
-    stoploss: "",
+    stop_loss: "",
+    direction: "LONG",
   });
 
   const token = localStorage.getItem("token");
@@ -20,18 +19,15 @@ const BuyOrder = () => {
     const { name, value } = e.target;
     setFormData({ ...formData, [name]: value });
   };
+
   const handleSubmit = (e) => {
     e.preventDefault();
-    if (!formData.price) {
-      alert("Please add a price");
-      return;
-    }
     if (!formData.quantity) {
       alert("Please enter a trade size");
       return;
     }
 
-    const url = "http://localhost:8000/api/market_buy/" // Wrong API endpoint currently.
+    const url = "http://localhost:8000/api/market_buy/" 
     console.log(`Attempting to post: ${url}`);
     axios({
       method: "post",
@@ -40,14 +36,23 @@ const BuyOrder = () => {
         "Content-Type": "application/json",
         "Authorization": "Token " + token,
       },
-      data: formData,
-    
+      data: {
+        symbol: formData.symbol,
+        quantity: formData.quantity,
+        stop_loss: formData.stop_loss ? formData.stop_loss : null,
+        direction: formData.direction,
+      },
     })
-
-      .then((response) => {
+    .then((response) => {
         console.log(response.data)
         if (response.status >= 200 && response.status < 300) {
           alert("Order placed successfully")
+          setFormData({
+            symbol: "",
+            quantity: "",
+            stop_loss: "",
+            direction: "LONG",
+          });
         }
       })
       .catch((error) => {
@@ -62,57 +67,84 @@ const BuyOrder = () => {
       });
   };
 
+  const buyOrderStyle = {
+    display: 'flex',
+    flexDirection: 'column',
+    alignItems: 'center',
+    backgroundColor: 'green',
+    padding: '20px',
+    borderRadius: '5px',
+  };
+
+  const labelStyle = {
+    marginBottom: '10px',
+    display: 'flex',
+    flexDirection: 'column',
+    alignItems: 'flex-start',
+    width: '100%',
+    color: 'white',
+    fontSize: '14px',
+    fontWeight: 'bold',
+  };
+
+  const inputStyle = {
+    marginBottom: '10px',
+    padding: '5px',
+    width: '200px',
+  };
+
+  const buttonStyle = {
+    padding: '10px',
+    backgroundColor: 'white',
+    color: 'black',
+    border: 'none',
+    borderRadius: '5px',
+    cursor: 'pointer',
+  };
+
   return (
     <form>
-      <div className="buyorder">
+      <div style={buyOrderStyle}>
 
-        <label>
+        <label style={labelStyle}>
           Symbol
           <input
             type="text"
             name="symbol"
             value={formData.symbol}
             onChange={updateFormData}
+            style={inputStyle}
           />
         </label>
 
-        <label>
+        <label style={labelStyle}>
           Size
           <input
             type="text"
             name="quantity"
             value={formData.quantity}
             onChange={updateFormData}
+            style={inputStyle}
           />
         </label>
 
-        <label>
-          Price
-          <input
-            type="text"
-            name="price"
-            value={formData.price}
-            onChange={updateFormData}
-          />
-        </label>
-    
       
-      
-        <label>
+        <label style={labelStyle}>
           Stop Loss
           <input
             type="text"
-            name="stoploss"
-            value={formData.stoploss}
+            name="stop_loss"
+            value={formData.stop_loss}
             onChange={updateFormData}
+            style={inputStyle}
           />
         </label>
-        <button type="submit" onClick={handleSubmit}>
+        <button type="submit" onClick={handleSubmit} style={buttonStyle}>
           Submit Order
         </button>
       </div>
     </form>
-  )
+  );
 }
 
-export default BuyOrder
+export default BuyOrder;

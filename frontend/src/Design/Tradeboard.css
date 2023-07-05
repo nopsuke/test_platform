@@ -1,0 +1,26 @@
+/* Additional styles specific to Tradeboard component */
+
+/* Additional styles specific to Tradeboard component */
+
+/* Additional styles specific to Tradeboard component */
+
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 20px;
+}
+
+.chart-container {
+  margin-bottom: 20px;
+}
+
+.order-container {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 20px;
+}
+
+.order-item {
+  flex: 1;
+  margin-right: 10px;
+}

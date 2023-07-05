@@ -1,0 +1,13 @@
+.profile-container {
+    display: flex;
+  }
+  
+  .profile-sidebar {
+    flex: 0 0 auto;
+  }
+  
+  .profile-content {
+    flex: 1;
+    margin-left: 20px;
+  }
+  

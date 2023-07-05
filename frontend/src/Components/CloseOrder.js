@@ -52,22 +52,56 @@ const CloseOrder = () => {
     });
 };
 
+const closeOrderStyle = {
+  display: 'flex',
+  flexDirection: 'column',
+  alignItems: 'center',
+  backgroundColor: 'blue',
+  padding: '20px',
+  borderRadius: '5px',
+};
 
+const labelStyle = {
+  marginBottom: '10px',
+  display: 'flex',
+  flexDirection: 'column',
+  alignItems: 'flex-start',
+  width: '100%',
+  color: 'white',
+  fontSize: '14px',
+  fontWeight: 'bold',
+};
+
+const inputStyle = {
+  marginBottom: '10px',
+  padding: '5px',
+  width: '100%',
+};
+
+const buttonStyle = {
+  padding: '10px',
+  backgroundColor: 'white',
+  color: 'black',
+  border: 'none',
+  borderRadius: '5px',
+  cursor: 'pointer',
+};
   return (
     <form>
-      <div className="buyorder">
+      <div style={closeOrderStyle}>
 
-        <label>
+        <label style={labelStyle}>
           trade_id:
           <input
             type="text"
             name="id"
             value={formData.id}
             onChange={updateFormData}
+            style={inputStyle}
           />
         </label>
 
-        <button type="submit" onClick={handleSubmit}>
+        <button type="submit" onClick={handleSubmit} style={buttonStyle}>
           Close order
         </button>
       </div>

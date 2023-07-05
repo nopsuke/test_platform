@@ -1,14 +1,18 @@
 from __future__ import absolute_import, unicode_literals
 from celery import shared_task
-from .models import OpenPositions, UserProfile, ClosedPositions
+from .models import OpenPositions, UserProfile, ClosedPositions, BattleGame
 from django.db import models, transaction
 import logging
 import redis
 import json
+import time
 from rest_framework.exceptions import ValidationError
+from statistics import mean
 
 
 logger = logging.getLogger(__name__)
+
+r = redis.Redis(host='localhost', port=6379, db=0)
 
 @shared_task
 @transaction.atomic
@@ -21,7 +25,10 @@ def close_position_task(open_position_id, user_profile_id):
         logger.error(f"No UserProfile with id={user_profile_id} or OpenPositions with id={open_position_id}")
         return
     
-    close_price = fetch_current_price(open_position.symbol)
+    if open_position.direction.upper() == "LONG":
+        close_price = fetch_current_price(open_position.symbol, "SHORT")
+    elif open_position.direction.upper() == "SHORT":
+        close_price = fetch_current_price(open_position.symbol, "LONG")
     if not close_price:
         logger.error(f"Could not fetch current price for {open_position.symbol}")
         return
@@ -30,8 +37,10 @@ def close_position_task(open_position_id, user_profile_id):
         profit_or_loss = (float(close_price) - float(open_position.open_price)) * float(open_position.quantity)
     else: # SHORT
         profit_or_loss = (float(open_position.open_price) - float(close_price)) * float(open_position.quantity)
-    print(f"Previous balance: {user_profile.balance}")
-    user_profile.balance += profit_or_loss + open_position.margin_used
+
+    fund_cost = float(open_position.funding_cost) + float(open_position.funding_cost)
+    
+    user_profile.balance += (profit_or_loss - fund_cost) + open_position.margin_used
     print(f"New balance: {user_profile.balance}")
     user_profile.save()
 
@@ -44,7 +53,7 @@ def close_position_task(open_position_id, user_profile_id):
         close_price=float(close_price),
         open_time=open_position.open_time,
         profit_or_loss=profit_or_loss,
-        leverage=open_position.leverage
+        leverage=open_position.leverage,
     )
 
     open_position.delete()
@@ -53,7 +62,9 @@ def close_position_task(open_position_id, user_profile_id):
             "quantity": closed_position.quantity,
             "open_price": closed_position.open_price,
             "close_price": closed_position.close_price,
-            "profit_or_loss": closed_position.profit_or_loss}
+            "profit_or_loss": closed_position.profit_or_loss,
+            "fund_cost": fund_cost,
+            }
 
 
 
@@ -69,12 +80,18 @@ def db_update_task():
         total_margin_used = 0
 
         for position in open_positions:
-            if not position.symbol in symbol_price:
-                symbol_price[position.symbol] = fetch_current_price(position.symbol)
+            symbol = position.symbol
 
-            current_price = symbol_price[position.symbol]
+            if symbol not in symbol_price:
+                symbol_price[symbol] = fetch_current_price(symbol, position.direction)
 
-            pnl = ((current_price - position.open_price) * position.quantity) if position.direction == 'LONG' else ((position.open_price - current_price) * position.quantity)
+            current_price = symbol_price[symbol]
+
+            if position.direction == "LONG":
+                pnl = (current_price - position.open_price) * position.quantity
+            else:   # SHORT
+                pnl = (position.open_price - current_price) * position.quantity
+    
             position.profit_or_loss = pnl
             total_pnl += pnl
             total_margin_used += position.margin_used
@@ -96,16 +113,19 @@ def db_update_task():
 
 @shared_task
 @transaction.atomic
-def place_order_task(user_profile_id, symbol, quantity, leverage, stop_loss=None):
+def place_order_task(user_profile_id, symbol, quantity, leverage, direction, stop_loss=None):
     user_profile = UserProfile.objects.get(pk=user_profile_id)
-
-    price = fetch_current_price(symbol)
         
-    if not price:
-        return {"error": "No price found for this symbol"}
+    stop_loss = None if stop_loss is None else float(stop_loss)
+
     if quantity is None or quantity == "0":
         return {"error": "Quantity is required"}
     
+    try:
+        price = fetch_current_price(symbol, direction)
+    except ValueError as e:
+        return {"error": str(e)}
+        
     amount = float(quantity) * float(price)
     if amount > 1000000:
         return {"error": "Order sizes cannot exceed $1,000,000"}
@@ -123,13 +143,14 @@ def place_order_task(user_profile_id, symbol, quantity, leverage, stop_loss=None
         return {"error": "Insufficient available margin to place this order"}
     
     maintenance_amount = get_maintenance_margin_amount(amount)
+    funding_cost = get_funding_cost(symbol, amount) * amount
 
-    equity = available_margin - margin_required
+    equity = available_margin - margin_required - funding_cost
 
     new_position = OpenPositions.objects.create(
         user_profile=user_profile,
-        symbol=symbol,
-        direction='LONG',
+        symbol=symbol.upper(),
+        direction=direction.upper(),
         quantity=quantity,
         open_price=price,
         stop_loss=stop_loss,
@@ -137,6 +158,7 @@ def place_order_task(user_profile_id, symbol, quantity, leverage, stop_loss=None
         margin_used=margin_required,
         maintenance_amount=maintenance_amount,
         equity=equity,
+        funding_cost = funding_cost,
     )
 
     new_position.save()
@@ -148,14 +170,18 @@ def place_order_task(user_profile_id, symbol, quantity, leverage, stop_loss=None
     return {"symbol": symbol, "quantity": quantity, "price": price, "amount": amount, "stop_loss": stop_loss}
 
 
-def fetch_current_price(symbol):
-    r = redis.Redis(host='localhost', port=6379, db=0)
-    current_price = r.get("BTC-USD")
-    if current_price is not None:
-        data = json.loads(current_price)
-        current_price = data["price"]
-    else:
-        return "Issue with data"
+
+    
+
+
+def fetch_current_price(symbol, direction):
+    
+    if direction == "LONG":
+        current_price = buy_price(symbol)
+        
+    elif direction == "SHORT":
+        current_price = sell_price(symbol)
+
     return current_price
 
 def get_margin_percentage(amount):
@@ -177,7 +203,102 @@ def get_maintenance_margin_amount(amount):
         return 1800
     elif 1000000 <= amount:
         return 5100
+
+def get_funding_cost(symbol, amount):
+    if symbol == "BTC-USD":
+        if amount < 10000:
+            return 0.0001
+        elif 10000 <= amount < 100000:
+            return 0.0002
+        elif 100000 <= amount < 500000:
+            return 0.0005
+        
+    elif symbol == "ETH-USD":
+        if amount < 10000:
+            return 0.0003
+
+def buy_price(symbol):
+    now = str(int(time.time() * 1000)) + "-0"
+    timestamp = str(int(time.time() * 1000) - 5000) + "-0"
+
+    stream_key = f"{symbol}: data"
+    messages = r.xrange(stream_key, min=timestamp, max=now)
+
+    prices = []
+    for message in messages:
+        data_str = message[1][b'data'].decode('utf-8')
+        data_list = json.loads(data_str)
+        for item in data_list:
+            price = float(item["price"])
+            prices.append(price)
     
+    if not prices:
+        print("Error: No available pricing data")
+        return None
+    buy_price = max(prices)
+    return buy_price
+    
+def sell_price(symbol):
+    now = str(int(time.time() * 1000)) + "-0"
+    timestamp = str(int(time.time() * 1000) - 5000) + "-0"
+
+    stream_key = f"{symbol}: data"
+    messages = r.xrange(stream_key, min=timestamp, max=now)
+
+    prices = []
+    for message in messages:
+        data_str = message[1][b'data'].decode('utf-8')
+        data_list = json.loads(data_str)
+        for item in data_list:
+            price = float(item["price"])
+            prices.append(price)
+    
+    if not prices:
+        print("Error: No available pricing data")
+        return None
+    sell_price = min(prices)
+    return sell_price
+    
+def close_price(symbol, direction):
+    now = str(int(time.time() * 1000)) + "-0"
+    timestamp = str(int(time.time() * 1000) - 5000) + "-0"
+
+    stream_key = f"{symbol}: data"
+    messages = r.xrange(stream_key, min=timestamp, max=now)
+
+    prices = []
+    for message in messages:
+        data_str = message[1][b'data'].decode('utf-8')
+        data_list = json.loads(data_str)
+        for item in data_list:
+            price = float(item["price"])
+            prices.append(price)
+    
+    if not prices:
+        print("Error: No available pricing data")
+        return None
+    if direction == "LONG":
+        close_price = min(prices)
+    elif direction == "SHORT":
+        close_price = max(prices)
+    return close_price
+    
+def get_game_result():
+    now = str(int(time.time() * 1000)) + "-0"
+    timestamp = str(int(time.time() * 1000) - 1000) + "-0"
+
+    stream_key = "BTC-USD: data"
+    messages = r.xrange(stream_key, min=timestamp, max=now)
+
+    prices = []
+    for message in messages:
+        data_str = message[1][b'data'].decode('utf-8')
+        data_list = json.loads(data_str)
+        for item in data_list:
+            price = float(item["price"])
+            prices.append(price)
+
+    price = mean(prices)
 
 # Liquidiation price calculation
 # https://www.binance.com/en/support/faq/how-to-calculate-liquidation-price-of-usd%E2%93%A2-m-futures-contracts-b3c689c1f50a44cabb3a84e663b81d93
