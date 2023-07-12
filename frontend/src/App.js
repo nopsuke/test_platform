@@ -17,7 +17,7 @@ import LogoutButton from "./Components/LogoutButton";
 import Guessing from "./Components/Guessing";
 
 const App = () => {
-  const [user, setUser] = useState() // E - I want to use this to store the user data upon successfully logging in. I'm not sure if this is the correct approach though.
+  const [user, setUser] = useState() 
   const [authenticated, setAuthenticated] = useState(localStorage.getItem("token") ? true : false);
 
 

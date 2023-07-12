@@ -1,12 +1,12 @@
 import React from 'react'
 import axios from 'axios'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 
 
 
-
-const BuyOrder = () => {
+const BuyOrder = ({ tradingProfiles }) => {
   const [formData, setFormData] = useState({
+    profile_id: "",
     symbol: "",
     quantity: "",
     stop_loss: "",
@@ -15,10 +15,23 @@ const BuyOrder = () => {
 
   const token = localStorage.getItem("token");
 
-  const updateFormData = (e) => {
-    const { name, value } = e.target;
-    setFormData({ ...formData, [name]: value });
+  useEffect(() => {
+    if (tradingProfiles.length > 0) {
+      setFormData((prevFormData) => ({
+        ...prevFormData,
+        profile_id: tradingProfiles[0].id,
+      }));
+    }
+  }, [tradingProfiles]);
+  console.log(tradingProfiles)
+  console.log(formData)
+  const updateFormData = (event) => {
+    setFormData({
+      ...formData,
+      [event.target.name]: event.target.value,
+    });
   };
+  console.log(formData)
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -26,6 +39,14 @@ const BuyOrder = () => {
       alert("Please enter a trade size");
       return;
     }
+    console.log(formData);
+    console.log({
+      profile_id: formData.profile_id, 
+      symbol: formData.symbol,
+      quantity: formData.quantity,
+      stop_loss: formData.stop_loss ? formData.stop_loss : null,
+      direction: formData.direction,
+    });
 
     const url = "http://localhost:8000/api/market_buy/" 
     console.log(`Attempting to post: ${url}`);
@@ -37,6 +58,7 @@ const BuyOrder = () => {
         "Authorization": "Token " + token,
       },
       data: {
+        profile_id: formData.profile_id, 
         symbol: formData.symbol,
         quantity: formData.quantity,
         stop_loss: formData.stop_loss ? formData.stop_loss : null,
@@ -48,6 +70,7 @@ const BuyOrder = () => {
         if (response.status >= 200 && response.status < 300) {
           alert("Order placed successfully")
           setFormData({
+            profile_id: formData.profile_id, // keep the currently selected profile
             symbol: "",
             quantity: "",
             stop_loss: "",
@@ -66,6 +89,7 @@ const BuyOrder = () => {
         }
       });
   };
+
 
   const buyOrderStyle = {
     display: 'flex',
@@ -103,8 +127,16 @@ const BuyOrder = () => {
   };
 
   return (
-    <form>
+    <form onSubmit={handleSubmit}>
       <div style={buyOrderStyle}>
+      <label style={labelStyle}>
+        Profile
+        <select name="profile_id" value={formData.profile_id} onChange={updateFormData} style={inputStyle}>
+          {tradingProfiles.map((profile) => 
+            <option key={profile.id} value={profile.id}>{profile.name}</option>
+          )}
+        </select>
+      </label>
 
         <label style={labelStyle}>
           Symbol

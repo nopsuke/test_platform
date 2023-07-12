@@ -1,7 +1,7 @@
 from django.contrib.auth import login, logout
 from django.shortcuts import render, redirect
 from django.contrib.auth.forms import UserCreationForm, AuthenticationForm
-from accounts.models import CustomUser, UserProfile, OpenPositions, ClosedPositions, BattleGame
+from accounts.models import CustomUser, UserProfile, OpenPositions, ClosedPositions, BattleGame, TradingProfile
 from django.db import transaction
 from accounts.forms import CustomUserCreationForm, BuyForm, LeverageChangeForm
 from django.contrib.auth.decorators import login_required
@@ -16,7 +16,7 @@ from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.views import APIView
 from rest_framework.exceptions import AuthenticationFailed, ValidationError
-from .serializers import UserSerializer, UserProfileSerializer, LoginSerializer
+from .serializers import UserSerializer, UserProfileSerializer, LoginSerializer, MarketOrderSerializer, TradingProfileSerializer
 from django.contrib.auth import get_user_model
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.authentication import TokenAuthentication
@@ -32,28 +32,34 @@ from statistics import mean
 r = redis.Redis(host='localhost', port=6379, db=0)
 logger = logging.getLogger(__name__)
 # Works as intended after Celery changes.
+
 class MarketBuyOrderView(APIView):
     authentication_classes = [TokenAuthentication]
 
     def post(self, request):
-        user_profile = UserProfile.objects.get(user=request.user)
-        symbol = request.data.get("symbol")
-        quantity = request.data.get("quantity")
-        stop_loss = request.data.get("stop_loss")
-        direction = request.data.get("direction")
-        leverage = user_profile.leverage
+        
+        serializer = MarketOrderSerializer(data=request.data)
+        if serializer.is_valid():
+            profile_id = serializer.validated_data['profile_id']
+            symbol = serializer.validated_data['symbol']
+            quantity = serializer.validated_data['quantity']
+            stop_loss = serializer.validated_data.get('stop_loss') # this is optional
+            direction = serializer.validated_data['direction']
 
-        if not symbol or not quantity:
-            raise ValidationError("Symbol and quantity are required.")
-        
-        if not direction in ["LONG", "SHORT"]:
-            raise ValidationError("Direction must be either LONG or SHORT.")
-        
-        try:
-            place_order_task.delay(user_profile.id, symbol, quantity, leverage, direction, stop_loss)
-            return Response({"message": "Order is being processed."}) # This return is awkward. Should be changed.
-        except Exception as e:
-            return Response({"error": str(e)}, status=400)
+            try:
+                trading_profile = TradingProfile.objects.get(id=profile_id, user_profile__user=request.user)
+            except TradingProfile.DoesNotExist:
+                return Response({"error": "Profile not found or does not belong to user."}, status=400)
+            
+            leverage = trading_profile.leverage
+
+            try:
+                place_order_task.delay(trading_profile.id, symbol, quantity, leverage, direction, stop_loss)
+                return Response({"message": "Order is being processed."}) 
+            except Exception as e:
+                return Response({"error": str(e)}, status=400)
+        else:
+            return Response(serializer.errors, status=400)
 
 class GameView(APIView):
     authentication_classes = [TokenAuthentication]
@@ -157,25 +163,23 @@ class RegisterView(APIView):
 
 class ClosePositionView(APIView):
     authentication_classes = [TokenAuthentication]
-    
 
     def post(self, request):
         open_position_id = request.data.get('id')
-    
 
         if not open_position_id:
             raise ValidationError("Position id is required.")
 
         user_profile = UserProfile.objects.get(user=request.user)
-        open_position = OpenPositions.objects.filter(id=open_position_id, user_profile=user_profile).first()
+        trading_profile = TradingProfile.objects.get(user_profile=user_profile)
+        open_position = OpenPositions.objects.filter(id=open_position_id, trading_profile=trading_profile).first()
 
         if not open_position:
             raise ValidationError("No open position found for this user with this id.")
         
-
         try:
-            close_position_task.delay(open_position.id, user_profile.id)
-            return Response({"message": "Position is closed."})
+            close_position_task.delay(open_position.id, trading_profile.id)
+            return Response({"message": "Position is being closed."})
         except Exception as e:
             return Response({"error": str(e)}, status=400)
 
@@ -217,6 +221,15 @@ class LoginView(APIView):
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
         
 
+class TradingProfileView(APIView):
+    authentication_classes = [TokenAuthentication]
+
+    def get(self, request):
+        user_profile = UserProfile.objects.get(user=request.user)
+        trading_profiles = TradingProfile.objects.filter(user_profile=user_profile)
+        serializer = TradingProfileSerializer(trading_profiles, many=True)
+        return Response(serializer.data)
+    
 
 
 class LogoutView(APIView):
@@ -234,23 +247,32 @@ class ProfileDashboardView(APIView):
 
     def get(self, request):
         user_profile = UserProfile.objects.get(user=request.user)
-        user_profile_data = UserProfileSerializer(user_profile).data
+        
+        # Now we're getting all trading profiles linked to this user profile
+        trading_profiles = TradingProfile.objects.filter(user_profile=user_profile)
+        
+        # If there's more than one profile, you need to decide which one you want to display. 
+        # For now, I'm assuming you want the first one.
+        if trading_profiles:
+            trading_profile = trading_profiles[0]
+        else:
+            return Response({'error': 'No trading profile found for this user.'})
 
-        # Query the ClosedPositions model for the trade with the most profit and loss
-        best_trade = ClosedPositions.objects.filter(user_profile=user_profile).order_by('-profit_or_loss').first()
-        worst_trade = ClosedPositions.objects.filter(user_profile=user_profile).order_by('profit_or_loss').first()
+        trading_profile_data = TradingProfileSerializer(trading_profile).data
 
-        # Assuming the `symbol` and `profit_or_loss` fields are what you're interested in
-        user_profile_data['bestTrade'] = {
+        best_trade = ClosedPositions.objects.filter(trading_profile=trading_profile).order_by('-profit_or_loss').first()
+        worst_trade = ClosedPositions.objects.filter(trading_profile=trading_profile).order_by('profit_or_loss').first()
+
+        trading_profile_data['bestTrade'] = {
             'symbol': best_trade.symbol if best_trade else None,
             'profit_or_loss': best_trade.profit_or_loss if best_trade else None
         }
-        user_profile_data['worstTrade'] = {
+        trading_profile_data['worstTrade'] = {
             'symbol': worst_trade.symbol if worst_trade else None,
             'profit_or_loss': worst_trade.profit_or_loss if worst_trade else None
         }
 
-        return Response(user_profile_data)
+        return Response(trading_profile_data)
 
 
 # I think this is for changing or resetting the balance. 

@@ -14,8 +14,8 @@ const ProfileDashboard = () => {
           headers: {
             "Authorization": "Token " + token,
           },
-        }); // Replace '/api/profile' with the appropriate API endpoint
-        setProfileData(response.data); // Assuming the API response contains the user profile data
+        }); 
+        setProfileData(response.data); 
       } catch (error) {
         console.log('Error retrieving profile data:', error);
       }
@@ -43,7 +43,7 @@ const ProfileDashboard = () => {
             </div>
           }
         </>
-      ) : (
+       ) : (
         <p>Loading profile data...</p>
       )}
     </div>

@@ -1,6 +1,7 @@
 from django.contrib.auth.models import AbstractUser
 from django.contrib.auth import get_user_model
 from django.db import models
+from django.dispatch import receiver
 from django.db.models.signals import post_save
 from django.dispatch import receiver
 import random, string
@@ -17,14 +18,25 @@ class UserProfile(models.Model):
     user = models.OneToOneField(get_user_model(), on_delete=models.CASCADE)
     avatar = models.ImageField(upload_to='avatars/', blank=True, null=True)
     bio = models.TextField(blank=True, null=True)
-    balance = models.FloatField(default=5000.00)
-    leverage = models.FloatField(default=20.0)
+    first_name = models.CharField(max_length=30, blank=True, null=True)
+    last_name = models.CharField(max_length=80, blank=True, null=True)
     referral_code = models.CharField(max_length=20, unique=True, blank=True, null=True)
     referrer = models.ForeignKey(get_user_model(), on_delete=models.SET_NULL, blank=True, null=True, related_name='referrals')
 
     def __str__(self):
         return self.user.username
+    
 
+class TradingProfile(models.Model):
+    user_profile = models.ForeignKey(UserProfile, on_delete=models.CASCADE)
+    name = models.CharField(max_length=100)
+    description = models.TextField(blank=True, null=True)
+    # Will need to add more fields but not sure what is needed..
+    balance = models.FloatField(default=5000.00)
+    leverage = models.FloatField(default=10.0)
+
+    def __str__(self):
+        return self.name
 
 POSITION_DIRECTIONS = [
    ('LONG', 'Long'),
@@ -32,14 +44,14 @@ POSITION_DIRECTIONS = [
 ]
 
 class OpenPositions(models.Model):
-    user_profile = models.ForeignKey(UserProfile, on_delete=models.CASCADE)
+    trading_profile = models.ForeignKey(TradingProfile, on_delete=models.CASCADE)
     symbol = models.CharField(max_length=15)
     direction = models.CharField(max_length=5, choices=POSITION_DIRECTIONS)
     quantity = models.FloatField()
     open_price = models.FloatField()
     open_time = models.DateTimeField(auto_now_add=True)
     stop_loss = models.FloatField(null=True, blank=True)
-    leverage = models.FloatField(default=20.0)
+    leverage = models.FloatField(default=10.0)
     liquidation_price = models.FloatField(null=True, blank=True)
     margin_used = models.FloatField(default=0.0)
     maintenance_amount = models.FloatField(default=0.0)
@@ -51,7 +63,7 @@ class OpenPositions(models.Model):
 
 
 class ClosedPositions(models.Model):
-    user_profile = models.ForeignKey(UserProfile, on_delete=models.CASCADE)
+    trading_profile = models.ForeignKey(TradingProfile, on_delete=models.CASCADE)
     symbol = models.CharField(max_length=15)
     direction = models.CharField(max_length=5, choices=POSITION_DIRECTIONS)
     quantity = models.FloatField()
@@ -61,7 +73,7 @@ class ClosedPositions(models.Model):
     close_time = models.DateTimeField(auto_now_add=True)
     stop_loss = models.FloatField(null=True, blank=True)
     profit_or_loss = models.FloatField(default=0.00)
-    leverage = models.FloatField(default=20.0)
+    leverage = models.FloatField(default=10.0)
     fund_cost = models.FloatField(default=0.00)
 
 
@@ -99,4 +111,11 @@ def create_user_profile(sender, instance, created, **kwargs):
 def save_user_profile(sender, instance, **kwargs):
     instance.userprofile.save()
 
+
+@receiver(post_save, sender=UserProfile)
+def create_trading_profile(sender, instance, created, **kwargs):
+    if created:
+        TradingProfile.objects.create(user_profile=instance, name='default', balance=5000.0, leverage=10.0)
+
+post_save.connect(create_trading_profile, sender=UserProfile)
 

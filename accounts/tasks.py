@@ -1,6 +1,6 @@
 from __future__ import absolute_import, unicode_literals
 from celery import shared_task
-from .models import OpenPositions, UserProfile, ClosedPositions, BattleGame
+from .models import OpenPositions, UserProfile, ClosedPositions, BattleGame, TradingProfile
 from django.db import models, transaction
 import logging
 import redis
@@ -16,13 +16,13 @@ r = redis.Redis(host='localhost', port=6379, db=0)
 
 @shared_task
 @transaction.atomic
-def close_position_task(open_position_id, user_profile_id):
+def close_position_task(open_position_id, trading_profile_id):
     try:
-        user_profile = UserProfile.objects.get(id=user_profile_id)
+        trading_profile = TradingProfile.objects.get(id=trading_profile_id)
         open_position = OpenPositions.objects.get(id=open_position_id)
         
     except (UserProfile.DoesNotExist, OpenPositions.DoesNotExist):
-        logger.error(f"No UserProfile with id={user_profile_id} or OpenPositions with id={open_position_id}")
+        logger.error(f"No UserProfile with id={trading_profile_id} or OpenPositions with id={open_position_id}")
         return
     
     if open_position.direction.upper() == "LONG":
@@ -40,12 +40,12 @@ def close_position_task(open_position_id, user_profile_id):
 
     fund_cost = float(open_position.funding_cost) + float(open_position.funding_cost)
     
-    user_profile.balance += (profit_or_loss - fund_cost) + open_position.margin_used
-    print(f"New balance: {user_profile.balance}")
-    user_profile.save()
+    trading_profile.balance += (profit_or_loss - fund_cost) + open_position.margin_used
+    print(f"New balance: {trading_profile.balance}")
+    trading_profile.save()
 
     closed_position = ClosedPositions.objects.create(
-        user_profile=user_profile,
+        trading_profile=trading_profile,
         symbol=open_position.symbol,
         direction=open_position.direction,
         quantity=open_position.quantity,
@@ -54,6 +54,9 @@ def close_position_task(open_position_id, user_profile_id):
         open_time=open_position.open_time,
         profit_or_loss=profit_or_loss,
         leverage=open_position.leverage,
+        fund_cost=fund_cost,
+
+
     )
 
     open_position.delete()
@@ -71,11 +74,11 @@ def close_position_task(open_position_id, user_profile_id):
 
 @shared_task
 def db_update_task():
-    user_profiles = UserProfile.objects.all()
+    trading_profiles = TradingProfile.objects.all()
     symbol_price = {}
 
-    for user_profile in user_profiles:
-        open_positions = OpenPositions.objects.filter(user_profile=user_profile)
+    for trading_profile in trading_profiles:
+        open_positions = OpenPositions.objects.filter(trading_profile=trading_profile)
         total_pnl = 0
         total_margin_used = 0
 
@@ -96,16 +99,16 @@ def db_update_task():
             total_pnl += pnl
             total_margin_used += position.margin_used
 
-        equity = user_profile.balance + total_pnl
+        equity = trading_profile.balance + total_pnl
 
         for position in open_positions:
             margin_level = (equity / total_margin_used) * 100 if total_margin_used > 0 else float('inf')
             position.equity = equity
-            logger.info(f"Current margin level for {user_profile.user.username} is {margin_level}")
+            logger.info(f"Current margin level for ")
             if margin_level < 120:
-                logger.warning(f"Margin call! Margin level below 120% for {user_profile.user.username}! Please add funds or close positions to avoid liquidation!")
+                logger.warning(f"Margin call! Margin level below 120% for ! Please add funds or close positions to avoid liquidation!")
             elif margin_level < 70:
-                logger.warning(f"THIS IS WHERE THE LIQUIDATION FUNCTION WILL BE CALLED for {user_profile.user.username}!")
+                logger.warning(f"THIS IS WHERE THE LIQUIDATION FUNCTION WILL BE CALLED for !")
 
         OpenPositions.objects.bulk_update(open_positions, ['profit_or_loss', 'equity'])
 
@@ -113,8 +116,8 @@ def db_update_task():
 
 @shared_task
 @transaction.atomic
-def place_order_task(user_profile_id, symbol, quantity, leverage, direction, stop_loss=None):
-    user_profile = UserProfile.objects.get(pk=user_profile_id)
+def place_order_task(trading_profile_id, symbol, quantity, leverage, direction, stop_loss=None):
+    trading_profile = TradingProfile.objects.get(pk=trading_profile_id)
         
     stop_loss = None if stop_loss is None else float(stop_loss)
 
@@ -132,9 +135,9 @@ def place_order_task(user_profile_id, symbol, quantity, leverage, direction, sto
     margin_percentage = get_margin_percentage(amount)
     margin_required = amount * margin_percentage
 
-    available_margin = user_profile.balance
+    available_margin = trading_profile.balance
 
-    open_position = OpenPositions.objects.filter(user_profile=user_profile).first()
+    open_position = OpenPositions.objects.filter(trading_profile=trading_profile).first()
 
     if open_position:
         available_margin = open_position.equity 
@@ -148,7 +151,7 @@ def place_order_task(user_profile_id, symbol, quantity, leverage, direction, sto
     equity = available_margin - margin_required - funding_cost
 
     new_position = OpenPositions.objects.create(
-        user_profile=user_profile,
+        trading_profile=trading_profile,
         symbol=symbol.upper(),
         direction=direction.upper(),
         quantity=quantity,
@@ -162,10 +165,10 @@ def place_order_task(user_profile_id, symbol, quantity, leverage, direction, sto
     )
 
     new_position.save()
-    print(user_profile.balance)
-    user_profile.balance -= margin_required
-    print(f"New balance is {user_profile.balance}")
-    user_profile.save()
+    print(trading_profile.balance)
+    trading_profile.balance -= margin_required
+    print(f"New balance is {trading_profile.balance}")
+    trading_profile.save()
 
     return {"symbol": symbol, "quantity": quantity, "price": price, "amount": amount, "stop_loss": stop_loss}
 

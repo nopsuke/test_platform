@@ -1,12 +1,15 @@
-import React from 'react'
+import React, { useState, useEffect } from 'react'
 import ProfileDashboard from './ProfileDashboard'
-
+import TradeBoard from './TradeBoard'
 import { Link } from 'react-router-dom'
 import '../Design/Profile.css'
+
 // This will hold the main "Profile" page/tab. Will hold "ProfileDashboard" and some other components which are tbd.
 
 
 const Profile = () => {
+
+
   return (
     <div className="profile-container">
       <div className="profile-sidebar">

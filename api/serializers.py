@@ -11,7 +11,7 @@ class UserProfileSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = UserProfile
-        fields = ('id', 'user', 'bio', "balance", "leverage",  "referral_code", "referrer")
+        fields = ('id', 'user', 'bio', "referral_code", "referrer")
 
 class OpenPositionsSerializer(serializers.ModelSerializer):
     #user = UserSerializer()

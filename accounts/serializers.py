@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import CustomUser, UserProfile
+from .models import CustomUser, UserProfile, TradingProfile
 from django.contrib.auth import authenticate
 
 class UserSerializer(serializers.ModelSerializer):
@@ -27,7 +27,7 @@ class UserSerializer(serializers.ModelSerializer):
 class UserProfileSerializer(serializers.ModelSerializer):
     class Meta:
         model = UserProfile
-        fields = ["id", 'balance', 'avatar', 'bio', 'leverage', 'referral_code', 'referrer']
+        fields = ["id", 'avatar', 'bio', 'referral_code', 'referrer']
 
 
 class LoginSerializer(serializers.Serializer):
@@ -50,3 +50,17 @@ class LoginSerializer(serializers.Serializer):
         return data
 
 # No idea if this works properly, need to test.
+
+
+class MarketOrderSerializer(serializers.Serializer):
+    profile_id = serializers.IntegerField(required=True)
+    symbol = serializers.CharField(max_length=100, required=True)
+    quantity = serializers.FloatField(required=True)
+    stop_loss = serializers.FloatField(required=False, allow_null=True)
+    direction = serializers.ChoiceField(choices=["LONG", "SHORT"], required=True)
+
+
+class TradingProfileSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = TradingProfile
+        fields = ["id", "user_profile", "name", "balance", "leverage"]

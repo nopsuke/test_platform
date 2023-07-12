@@ -1,24 +1,37 @@
 import React from 'react'
 import axios from 'axios'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 
 // E - I don't know if the BuyOrder and SellOrder should be separate components or if they should be combined into one component. Thoughts?
 
 
-const SellOrder = () => {
+const SellOrder = ( {tradingProfiles} ) => {
   const [formData, setFormData] = useState({
+    profile_id: "",
     symbol: "",
     quantity: "",
     stop_loss: "",
-    direction: "SHORT",
+    direction: "LONG",
   });
 
   const token = localStorage.getItem("token");
 
-  const updateFormData = (e) => {
-    const { name, value } = e.target;
-    setFormData({ ...formData, [name]: value });
+  useEffect(() => {
+    if (tradingProfiles.length > 0) {
+      setFormData((prevFormData) => ({
+        ...prevFormData,
+        profile_id: tradingProfiles[0].id,
+      }));
+    }
+  }, [tradingProfiles]);
+
+  const updateFormData = (event) => {
+    setFormData({
+      ...formData,
+      [event.target.name]: event.target.value,
+    });
   };
+  console.log(formData)
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -26,6 +39,15 @@ const SellOrder = () => {
       alert("Please enter a trade size");
       return;
     }
+    console.log(formData);
+    console.log({
+      profile_id: formData.profile_id, 
+      symbol: formData.symbol,
+      quantity: formData.quantity,
+      stop_loss: formData.stop_loss ? formData.stop_loss : null,
+      direction: formData.direction,
+    });
+
 
     const url = "http://localhost:8000/api/market_buy/" 
     console.log(`Attempting to post: ${url}`);
@@ -37,6 +59,7 @@ const SellOrder = () => {
         "Authorization": "Token " + token,
       },
       data: {
+        profile_id: formData.profile_id, 
         symbol: formData.symbol,
         quantity: formData.quantity,
         stop_loss: formData.stop_loss ? formData.stop_loss : null,
@@ -48,6 +71,7 @@ const SellOrder = () => {
         if (response.status >= 200 && response.status < 300) {
           alert("Order placed successfully")
           setFormData({
+            profile_id: formData.profile_id, // keep the currently selected profile
             symbol: "",
             quantity: "",
             stop_loss: "",
@@ -102,8 +126,18 @@ const SellOrder = () => {
     cursor: 'pointer',
   };
   return (
-    <form>
+    <form onSubmit={handleSubmit}>
+
       <div style={sellOrderStyle}>
+        <label style={labelStyle}>
+          Profile
+          <select name="profile_id" value={formData.profile_id} onChange={updateFormData} style={inputStyle}>
+            {tradingProfiles.map((profile) => 
+              <option key={profile.id} value={profile.id}>{profile.name}</option>
+            )}
+          </select>
+        </label>
+      
         <label style={labelStyle}>
           Symbol
           <input 

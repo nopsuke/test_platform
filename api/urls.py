@@ -2,7 +2,7 @@ from django.urls import path
 from . import views
 from accounts import views as accounts_views
 from accounts import urls as accounts_urls
-from accounts.views import RegisterView, LoginView, LogoutView, MarketBuyOrderView, ClosePositionView, ProfileDashboardView, GameView
+from accounts.views import RegisterView, LoginView, LogoutView, MarketBuyOrderView, ClosePositionView, ProfileDashboardView, GameView, TradingProfileView
 
 urlpatterns = [
     path('users/', views.UserList.as_view(), name='user-list'),
@@ -23,5 +23,6 @@ urlpatterns = [
     path("close_positions/", ClosePositionView.as_view(), name="close_positions"),
     path("profile_dashboard/", ProfileDashboardView.as_view(), name="profile_dashboard"),
     path("game/", GameView.as_view(), name="game"),
+    path("trading_profile/", TradingProfileView.as_view(), name="trading_profile"),
 ]
 
